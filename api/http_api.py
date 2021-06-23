@@ -1,6 +1,6 @@
-from flask import Flask, make_response, jsonify,request,abort
+from flask import Flask, make_response, jsonify, request, abort
 import pymongo
-    
+
 
 # 数据库连接
 class Mongodb:
@@ -17,7 +17,7 @@ class Mongodb:
         return self.xiaosuo.find(tiaojian)
 
     def get_xiaosuojihe_list(self):
-        return self.xiaosuojihe.find({}, { "_id": 0, "name": 1})
+        return self.xiaosuojihe.find({}, {"_id": 0, "name": 1})
 
     # 小说储存
     def get_xiaosuo(self, url):
@@ -25,7 +25,7 @@ class Mongodb:
             return True
         return False
 
-    def create_xiaosuo(self,data):
+    def create_xiaosuo(self, data):
         if self.xiaosuo.insert_one(data).inserted_id:
             return True
         return False
@@ -36,7 +36,7 @@ class Mongodb:
             return True
         return False
 
-    def create_lishi(self,url):
+    def create_lishi(self, url):
         if self.lishi.insert_one({"url": url}).inserted_id:
             return True
         return False
@@ -46,9 +46,11 @@ class Mongodb:
 app = Flask(__name__)
 mongo = Mongodb()
 
+
 @app.route('/')
 def hello_world():
     return 'sis001后端'
+
 
 @app.route("/xiaosuo", methods=['GET', 'POST'])
 def xiaosuo():
@@ -57,8 +59,8 @@ def xiaosuo():
     if type_data == "list":
         "获取小说列表"
         data_dic = {
-        "mess": "返回小说列表成功",
-        "data": []
+            "mess": "返回小说列表成功",
+            "data": []
         }
         data_dic["data"] = [x for x in mongo.get_xiaosuo_list()]
         return jsonify(data_dic)
@@ -125,13 +127,16 @@ def xiaosuo():
 
     return "小说获取"
 
+
 @app.errorhandler(404)
 def not_found(error):
     return make_response(jsonify({'mess': '连接不存在'}), 404)
+
 
 @app.errorhandler(400)
 def not_found(error):
     return make_response(jsonify({'mess': '错误的请求'}), 404)
 
+
 if __name__ == '__main__':
-   app.run(debug=True)
+    app.run(debug=True)
