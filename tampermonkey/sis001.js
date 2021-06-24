@@ -215,7 +215,7 @@
                     GM_xmlhttpRequest({
                         url:host + "xiaosuo?type=xiaosuo",
                         method :"POST",
-                        data:JSON.stringify({"type": this.type, "book": this.book, "index": this.indexdata, "title": title, "url": url, "爬取状态": "未爬取", "下载状态": "未下载"}),
+                        data:JSON.stringify({"type": this.type, "book": this.book, "index": this.indexdata, "title": title, "url": url, "爬取状态": "未爬取", "下载状态": "未下载", "内容": ""}),
                         dataType: "json",
                         headers: {
                             "Content-type": "application/json"

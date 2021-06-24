@@ -32,6 +32,11 @@ class Mongodb:
             return True
         return False
 
+    # 小说书籍储存(检查是否存在，不存在则储存)
+    def book(self, name):
+        self.xiaosuojihe.update_many({"name": name}, {"$setOnInsert": {"name": name}},
+                                     upsert=True)
+
     # 历史储存
     def get_lishi(self, url):
         if self.lishi.count_documents({"url": url}):
@@ -76,9 +81,11 @@ def xiaosuo():
                 return jsonify({"mess": "错误，未传递URL"})
         elif request.method == "POST":
             if request.json and "url" in request.json:
-                # print(request.json)
                 if not mongo.get_xiaosuo(request.json["url"]):
-                    mongo.create_xiaosuo(request.json)
+                    data_json = request.json
+                    data_json["index"] = int(data_json["index"])
+                    mongo.create_xiaosuo(data_json)
+                    mongo.book(str(data_json["book"]))
                     return jsonify({"mess": "创建成功", "data": request.json["url"]})
                 else:
                     return jsonify({"mess": "URL已存在", "data": request.json["url"]})

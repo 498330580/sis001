@@ -194,9 +194,9 @@ class Get_Xiaosuo:
             index += 1
             print("当前爬取第{}条数据:\t{}\t{}".format(index, i["title"], i["url"]))
             data = self.sis001.get_url(i["url"])
-            t = []
+            t = ""
             for xiaosuo_str in data['data']:
-                t.append(xiaosuo_str)
+                t = t + xiaosuo_str
             self.xiaosuojihe.update_many({"name": i["book"]}, {"$setOnInsert": {"name": i["book"]}}, upsert=True)
             self.xiaosuo.update_many(i, {"$set": {"爬取状态": "已爬取", "内容": t}})
         print("爬取完毕")
