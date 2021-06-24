@@ -7,10 +7,23 @@
     //     alert(url);
     // }
 
+    // 判断是否为小说板块
+    function xiaosuo(url) {
+        // let url = window.location.href;
+        // let url_zz = /^http.*?forum-(3|2|8|9)(1|2|3|6|7|8)(2|3|4|9|)-.*tml$/ig;
+        let url_zz = /^http.*?forum-((322)|(383)|(334)|(279)|(359)|(31)|(83)|(96))-.*tml$/ig;
+        if (url_zz.test(url)) {
+            return true
+        } else {
+            return false
+        }
+    }
+
     // 列表页识别
     function list() {
         var content = document.getElementsByName("moderate");   //获取内容
         var tables = content[0].getElementsByTagName("table");  //获取所有table标签
+
         for (let i = 0; i < tables.length; i++) {
             if (tables[i].id) {
                 let table = tables[i];
@@ -33,13 +46,17 @@
                                         if (data["mess"]!= "错误，未传递URL") {
                                             let xs = data["data"]["xiaosuo"]
                                             let ls = data["data"]["lishi"]
-                                            if (xs) {
-                                                a_data.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                                            } else {
-                                                a_data.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                                            let url = window.location.href;
+                                            // let url_zz = /^http.*?forum-(3|2|8|9)(2|3|6|7|8)(2|3|4|9|)-.*tml$/ig
+                                            if (xiaosuo(url)) {
+                                                if (xs) {
+                                                    a_data.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                                                } else {
+                                                    a_data.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                                                }
                                             }
                                             if (ls) {
-                                                a_data.innerHTML += '<i class="iconfont icon-yikan"" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                                                a_data.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                                             } else {
                                                 a_data.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
                                             }
@@ -74,11 +91,9 @@
         var tbodys = document.getElementsByTagName("tbody");
         for (let i = 0; i < tbodys.length; i++) {
             let tbody = tbodys[i];
-            let th = tbody.getElementsByTagName("th")[0]
-            let a = th.getElementsByTagName("a")[0]
+            let a = tbody.getElementsByTagName("th")[0].getElementsByTagName("a")[0]
             let url = a.href
-            // let text = a.innerText
-            // console.log(url, text);
+            let url_bankuai = tbody.getElementsByClassName("forum")[0].getElementsByTagName("a")[0].href
             GM_xmlhttpRequest({
                 url:host + "xiaosuo?type=xiaosuo-lishi&url=" + url,
                 method: "GET",
@@ -90,13 +105,17 @@
                     if (data["mess"]!= "错误，未传递URL") {
                         let xs = data["data"]["xiaosuo"]
                         let ls = data["data"]["lishi"]
-                        if (xs) {
-                            a.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                        } else {
-                            a.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                        console.log(url_bankuai)
+                        if (xiaosuo(url_bankuai)) {
+                            console.log("已识别")
+                            if (xs) {
+                                a.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                            } else {
+                                a.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                            }
                         }
                         if (ls) {
-                            a.innerHTML += '<i class="iconfont icon-yikan"" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                            a.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                         } else {
                             a.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
                         }
@@ -112,6 +131,9 @@
     function xiangqing() {
         let h1 = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0];
         let url = window.location.href;
+        let a = document.getElementById("nav").getElementsByTagName("a")
+        let url_bankuai = a[a.length-1].href
+        if (xiaosuo(url_bankuai)) {
         document.getElementById("foruminfo").innerHTML += `<br><div id="save" style="border: 2px solid lightblue;text-align:center;border-style: outset;background-color: lightblue;padding: 5px;">
         <i class="iconfont icon-leibie" title="保存的数据类别">类别：</i>
         <select name="public-choice" v-model="type" style="width:149px;height:25px;text-align:center;text-align-last:center;"><option :value="coupon.id" v-for="coupon in typelist">{{coupon.name}}</option></select>
@@ -120,7 +142,7 @@
         <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
         <input type="text"v-model="book"style="width:200x;">
         <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo()">提交</button>
-        </div>`
+        </div>`}
         GM_xmlhttpRequest({
             url:host + "xiaosuo?type=xiaosuo-lishi&url=" + url,
             method: "GET",
@@ -132,12 +154,16 @@
                 if (data["mess"]!= "错误，未传递URL") {
                     let xs = data["data"]["xiaosuo"]
                     let ls = data["data"]["lishi"]
-                    if (xs) {
-                        h1.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                        document.getElementById("save").remove();
-                    } else {
-                        h1.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+
+                    if (xiaosuo(url_bankuai)) {
+                        if (xs) {
+                            h1.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                            document.getElementById("save").remove();
+                        } else {
+                            h1.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                        }
                     }
+
                     if (ls) {
                         h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                     } else {
