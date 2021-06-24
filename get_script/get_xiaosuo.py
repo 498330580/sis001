@@ -1,26 +1,29 @@
-import os, sys, time
-from random import randint
-import pymongo
+import os
 import pickle
+import sys
+import time
+from random import randint
+
+import pymongo
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
 webdriver.ChromeOptions()
 
 # 设定工作目录为当前脚本目录
-jaoben_path = os.path.abspath(os.path.dirname(sys.argv[0])) # 当前脚本目录
-os.chdir(jaoben_path)   # 设定工作目录为脚本目录
-
+jaoben_path = os.path.abspath(os.path.dirname(sys.argv[0]))  # 当前脚本目录
+os.chdir(jaoben_path)  # 设定工作目录为脚本目录
 
 # 全局变量
-Chrome_path = os.path.join(jaoben_path, "chrome", "chrome.exe")    # 浏览器路径
-Driver_path = os.path.join(jaoben_path, "chrome", "chromedriver.exe")    # 浏览器驱动路径
+Chrome_path = os.path.join(jaoben_path, "chrome", "chrome.exe")  # 浏览器路径
+Driver_path = os.path.join(jaoben_path, "chrome", "chromedriver.exe")  # 浏览器驱动路径
 Cookie_data_path = os.path.join(jaoben_path, "data", "cookie")  # cookie数据储存地址
 # Download_path = os.path.join(jaoben_path, "download")    # 下载目录
-Proxy_server = "http://127.0.0.1:10809"     # 代理
+Proxy_server = "http://127.0.0.1:10809"  # 代理
 User_Password = ["498330580", "19920124zhy@."]
-Max_sleep = 5  #爬取最大等待时间
-Login_yanzheng_url = "http://www.sis001.com//forum/forum-184-1.html"    # 登陆验证地址
+Max_sleep = 5  # 爬取最大等待时间
+Login_yanzheng_url = "http://www.sis001.com//forum/forum-184-1.html"  # 登陆验证地址
 
 
 # 等待时间
@@ -36,17 +39,19 @@ class Get_sis001_xiaosuo:
         options = Options()
         options.binary_location = Chrome_path
         options.add_argument(f'--proxy-server={Proxy_server}')
-        options.add_argument('user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"') # 配置对象添加替换User-Agent的命令
-        options.add_argument('window-size=800x600') # 设置浏览器分辨率（窗口大小）
+        options.add_argument(
+            'user-agent="Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/69.0.3497.100 Safari/537.36"')  # 配置对象添加替换User-Agent的命令
+        options.add_argument('window-size=800x600')  # 设置浏览器分辨率（窗口大小）
         # options.add_argument('url=http://www.baidu.com')
-        options.add_argument('disable-infobars')    # 禁用浏览器正在被自动化程序控制的提示
+        options.add_argument('disable-infobars')  # 禁用浏览器正在被自动化程序控制的提示
         options.add_argument('blink-settings=imagesEnabled=false')  # 不加载图片
-        options.add_argument("--disable-gpu")                  # 禁用gpu
-        options.add_argument('--start-minimized')              # 最小化运行
-        options.add_argument('--headless')  #浏览器不提供可视化页面. linux下如果系统不支持可视化不加这条会启动失败
+        options.add_argument("--disable-gpu")  # 禁用gpu
+        options.add_argument('--start-minimized')  # 最小化运行
+        options.add_argument('--headless')  # 浏览器不提供可视化页面. linux下如果系统不支持可视化不加这条会启动失败
         options.add_experimental_option('excludeSwitches', ['enable-logging'])  # 禁止打印日志
-        options.add_argument("disable-cache")#禁用缓存
-        options.add_argument('log-level=3')#INFO = 0 WARNING = 1 LOG_ERROR = 2 LOG_FATAL = 3 default is 0
+        options.add_argument("disable-cache")  # 禁用缓存
+        options.add_argument('log-level=3')  # INFO = 0 WARNING = 1 LOG_ERROR = 2 LOG_FATAL = 3 default is 0
         self.driver = webdriver.Chrome(chrome_options=options, executable_path=Driver_path)
         # self.driver.set_window_size(800, 600)
         self.driver.minimize_window()
@@ -90,7 +95,8 @@ class Get_sis001_xiaosuo:
                     print("模拟登陆")
                     self.driver.get('http://www.sis001.com//forum/logging.php?action=login')
                     self.driver.implicitly_wait(30)
-                    em_data = self.driver.find_element_by_xpath('//*[@id="clickVerifyDiv"]').find_elements_by_tag_name("em")
+                    em_data = self.driver.find_element_by_xpath('//*[@id="clickVerifyDiv"]').find_elements_by_tag_name(
+                        "em")
                     int_or_en = self.driver.find_element_by_xpath('//*[@id="verifyTips"]/font').text
                     for i in em_data:
                         if "数字" == int_or_en and str(i.text).isdigit():
@@ -132,13 +138,16 @@ class Get_sis001_xiaosuo:
             data = {'title': self.driver.find_element_by_xpath('//*[@id="wrapper"]/div[1]/form/div[1]/h1').text}
             data_list = []
             while True:
-                content = self.driver.find_elements_by_xpath('/html/body/div[4]/div[1]/form/div/table/tbody/tr[1]/td[2]/div[3]/div[3]/div')
+                content = self.driver.find_elements_by_xpath(
+                    '/html/body/div[4]/div[1]/form/div/table/tbody/tr[1]/td[2]/div[3]/div[3]/div')
                 for i in content:
                     if len(i.text) > 500:
                         data_list.append(i.text)
-                nextpage = self.driver.find_elements_by_css_selector('#wrapper > div:nth-child(1) > div:nth-child(12) > div.pages > a.next')
+                nextpage = self.driver.find_elements_by_css_selector(
+                    '#wrapper > div:nth-child(1) > div:nth-child(12) > div.pages > a.next')
                 if len(nextpage) == 1:
-                    self.driver.find_element_by_css_selector('#wrapper > div:nth-child(1) > div:nth-child(12) > div.pages > a.next').click()
+                    self.driver.find_element_by_css_selector(
+                        '#wrapper > div:nth-child(1) > div:nth-child(12) > div.pages > a.next').click()
                 else:
                     break
                     # print("››")
@@ -152,9 +161,11 @@ class Get_sis001_xiaosuo:
 
 
 def test_proxies(proxies):
-    header = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36"}
+    header = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/67.0.3396.99 Safari/537.36"}
     try:
-        response=requests.get(Login_yanzheng_url,headers=header,proxies= {"http":proxies},timeout= 5)
+        response = requests.get(Login_yanzheng_url, headers=header, proxies={"http": proxies}, timeout=5)
         if response.status_code == 200:
             # print("该代理IP可用：",proxies)
             return True
@@ -186,8 +197,8 @@ class Get_Xiaosuo:
             t = []
             for xiaosuo_str in data['data']:
                 t.append(xiaosuo_str)
-            self.xiaosuojihe.update_many({"name": i["book"]},{"$setOnInsert": {"name": i["book"]}}, upsert=True)
-            self.xiaosuo.update_many(i, {"$set": {"爬取状态": "已爬取","内容": t}})
+            self.xiaosuojihe.update_many({"name": i["book"]}, {"$setOnInsert": {"name": i["book"]}}, upsert=True)
+            self.xiaosuo.update_many(i, {"$set": {"爬取状态": "已爬取", "内容": t}})
         print("爬取完毕")
         self.sis001.sis001_exit()
 
