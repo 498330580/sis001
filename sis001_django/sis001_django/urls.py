@@ -20,12 +20,22 @@ from django.conf.urls.static import static
 from rest_framework.documentation import include_docs_urls
 from rest_framework import routers
 
-router = routers.DefaultRouter()
-# router.register(r'users', UsersViewSet)
+from rest_framework.authtoken import views
+
+from xiaosuo.views import VisitHistoryViewsSet, CollectionViewsSet, ChapterViewsSet
+
+router = routers.DefaultRouter(trailing_slash=False)
+router.register(r'lishi', VisitHistoryViewsSet)
+router.register(r'book', CollectionViewsSet)
+router.register(r'zhangjie', ChapterViewsSet)
+
+from xiaosuo.views import PanDuan
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path(r'api/doc/', include_docs_urls(title='人员资产管理系统PAMS')),     # api测试接口
+    path('api-token-auth/', views.obtain_auth_token),
+    path('panduan', PanDuan.as_view(), name="panduan"),
+    path(r'api/doc/', include_docs_urls(title='API_DOC')),     # api测试接口
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include(router.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

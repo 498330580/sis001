@@ -15,7 +15,7 @@ class UserProfile(AbstractUser):
         (2, "女")
     )
     birthday = models.DateField(null=True, blank=True, verbose_name="出生年月")
-    gender = models.IntegerField(max_length=6, choices=GENDER_TYPE, default=0, verbose_name="性别")
+    gender = models.IntegerField(choices=GENDER_TYPE, default=0, verbose_name="性别")
     mobile = models.CharField(null=True, blank=True, max_length=11, verbose_name="电话")
     avatar = models.ImageField(upload_to='avatar/%Y/%m/%d',
                                default='avatar/default.png',

@@ -16,7 +16,7 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, BASE_DIR)
+# sys.path.insert(0, BASE_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 
@@ -40,14 +40,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',  # 解决跨域问题
     'rest_framework',  # 注册DRF
     'django_filters',
-    # 'corsheaders',  # 解决跨域问题
-    'users.apps.UsersConfig',
+    'rest_framework.authtoken',
+    'users',
+    'xiaosuo'
 ]
 
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',  # 解决跨域问题
+    'corsheaders.middleware.CorsMiddleware',  # 解决跨域问题
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -129,6 +131,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'users.UserProfile'  # 自定义用户模组
 
+APPEND_SLASH = False    # url末尾斜杠
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
@@ -136,45 +140,52 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # DRF设置
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.AutoSchema',
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],  # 过滤器、分页、搜索
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # 分页器
-    'PAGE_SIZE': 25  # 分页数
+    'PAGE_SIZE': 25,  # 分页数
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+            'rest_framework.authentication.BasicAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+            'rest_framework.authentication.TokenAuthentication',
+        ]
 }
 
-# # 解决跨域问题
-# # 跨域增加忽略
-# CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
-# CORS_ORIGIN_ALLOW_ALL = False  # 是否允许所有跨域
-# # 配置允许跨域访问的域名
-# CORS_ORIGIN_WHITELIST = (
-#     'http://127.0.0.1:8080',
-#     'http://localhost:8080',
-#     'http://192.168.31.11:8080:',
-#     'http://ceshi.yaoling.com:8888'
-# )
-# # 允许的请求方式
-# CORS_ALLOW_METHODS = (
-#     'DELETE',
-#     'GET',
-#     'OPTIONS',
-#     'PATCH',
-#     'POST',
-#     'PUT',
-#     'VIEW',
-# )
-# # 允许的请求头
-# CORS_ALLOW_HEADERS = (
-#     'XMLHttpRequest',
-#     'X_FILENAME',
-#     'accept-encoding',
-#     'authorization',
-#     'content-type',
-#     'dnt',
-#     'origin',
-#     'user-agent',
-#     'x-csrftoken',
-#     'x-requested-with',
-# )
+# 解决跨域问题
+# 跨域增加忽略
+CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+CORS_ORIGIN_ALLOW_ALL = True  # 是否允许所有跨域
+# SESSION_COOKIE_HTTPONLY = False
+# SESSION_COOKIE_SAMESITE = None
+# 配置允许跨域访问的域名
+CORS_ORIGIN_WHITELIST = (
+    'http://127.0.0.1:8080',
+    'http://localhost:8080',
+    'http://www.sis001.com'
+)
+# 允许的请求方式
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+# 允许的请求头
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+)
 
 # JWT设置
 # JWT_AUTH = {'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),  # 设置7天过期
