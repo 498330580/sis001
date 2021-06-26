@@ -1,9 +1,8 @@
 <template>
-	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
-		<view class="text-area">
-			<text class="title">{{title}}</text>
-		</view>
+	<view>
+		<uni-list>
+		    <uni-list-item v-for="(item,index) in list" :key="index" :title="item.name" note="未看" link clickable to="/pages/book/book" @click="onClick($event,1)" />
+		</uni-list>
 	</view>
 </template>
 
@@ -11,13 +10,27 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello'
+				title: 'Hello',
+				list: []
 			}
 		},
 		onLoad() {
-
+			this.getbook()
 		},
 		methods: {
+			getbook(){
+				uni.request({
+					url:"http://127.0.0.1:5000/xiaosuo?type=list",
+					method: "GET",
+					header:{"Content-Type": "application/json"},
+					success:(res) => {
+						var d = res.data.data
+						for (var i = 0; i < d.length; i++) {
+							this.list.push(d[i])
+						}
+					}
+				})
+			}
 
 		}
 	}

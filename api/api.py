@@ -1,4 +1,5 @@
 from flask import Flask, make_response, jsonify, request, abort
+from flask_cors import CORS
 import pymongo
 
 
@@ -37,6 +38,9 @@ class Mongodb:
         self.xiaosuojihe.update_many({"name": name}, {"$setOnInsert": {"name": name}},
                                      upsert=True)
 
+    # def get_book(self):
+    #     return self.xiaosuojihe.find()
+
     # 历史储存
     def get_lishi(self, url):
         if self.lishi.count_documents({"url": url}):
@@ -51,6 +55,8 @@ class Mongodb:
 
 # 后端
 app = Flask(__name__)
+
+CORS(app, supports_credentials=True)
 mongo = Mongodb()
 
 
@@ -65,7 +71,7 @@ def xiaosuo():
 
     if type_data == "list":
         "获取小说列表"
-        data_dic = {"mess": "返回小说列表成功", "data": [x for x in mongo.get_xiaosuo_list()]}
+        data_dic = {"mess": "返回小说列表成功", "data": [x for x in mongo.get_xiaosuojihe_list()]}
         return jsonify(data_dic)
 
     if type_data == "xiaosuo":
