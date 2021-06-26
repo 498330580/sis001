@@ -18,16 +18,31 @@
 			this.getbook()
 		},
 		methods: {
+			// getbook(){
+			// 	uni.request({
+			// 		url:"http://127.0.0.1:5000/xiaosuo?type=list",
+			// 		method: "GET",
+			// 		header:{"Content-Type": "application/json"},
+			// 		success:(res) => {
+			// 			var d = res.data.data
+			// 			for (var i = 0; i < d.length; i++) {
+			// 				this.list.push(d[i])
+			// 			}
+			// 		}
+			// 	})
+			// },
 			getbook(){
 				uni.request({
-					url:"http://127.0.0.1:5000/xiaosuo?type=list",
+					url:"http://127.0.0.1:8000/api/lishi",
 					method: "GET",
-					header:{"Content-Type": "application/json"},
+					header:{"Content-Type": "application/json", "Authorization": "Token 27171cc46f6bda2668ca755810635e577f600fa4"},
 					success:(res) => {
-						var d = res.data.data
-						for (var i = 0; i < d.length; i++) {
-							this.list.push(d[i])
-						}
+						console.log(res.data)
+						// var d = res.data.data
+						// for (var i = 0; i < d.length; i++) {
+						// 	// this.list.push(d[i])
+						// 	console.log(d[i])
+						// }
 					}
 				})
 			}

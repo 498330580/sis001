@@ -1,3 +1,5 @@
+// @require      https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.slim.min.js
+
 (function () {
     'use strict';   //严格模式
 
@@ -173,6 +175,7 @@
                             method :"POST",
                             data:JSON.stringify({"url": url}),
                             dataType: "json",
+                            anonymous: Request,
                             headers: {
                                 "Content-type": "application/json",
                                 "Authorization": "Token " + token
@@ -200,26 +203,18 @@
 
     // 测试
     function ceshi() {
-        GM_xmlhttpRequest({
-            url: "http://httpbin.org/post",
-            method :"POST",
-            headers: {
-                "Content-type": "application/json"
-            },
-            data:JSON.stringify({
-                "username": "498330580",
-                "password": "19920124Zhy@."
-            }),
+        jQuery.ajax({
+            type: "get",
+            url: "http://127.0.0.1:8000/api/lishi",
             dataType: "json",
-            onload:function(xhr){
-                console.log(xhr.innerText);
-                console.log(JSON.parse(xhr.innerText));
+            success:function (r) {
+                console.log(r);
             }
         })
     }
 
     console.log("sis001脚本运行")
-    // ceshi()
+    ceshi()
     var url = window.location.href;
     var title = "";
     var url_zz = /^http.*?forum.*/ig;
