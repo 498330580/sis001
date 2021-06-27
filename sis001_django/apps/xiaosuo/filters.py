@@ -20,11 +20,25 @@ class CollectionFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Collection
-        fields = ['category', 'name', 'label', 'plate', 'category']
+        fields = ['category', 'name', 'classification', 'plate', 'category']
 
 
 class ChapterFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Chapter
-        fields = ['label', 'name', 'label', 'plate', 'category', 'crawling_status']
+        fields = ['name', 'url', 'classification', 'plate', 'category', 'crawling_status']
+
+
+class ClassificationFilter(django_filters.rest_framework.FilterSet):
+
+    class Meta:
+        model = Classification
+        fields = ['user__username', 'name']
+
+
+class PlateFilter(django_filters.rest_framework.FilterSet):
+
+    class Meta:
+        model = Plate
+        fields = ['user__username', 'name']

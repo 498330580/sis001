@@ -9,23 +9,55 @@ TYPE = (
     (2, "图片")
 )
 
-Label = (
-    (0, "无")
-)
+# Label = (
+#     (0, "无"),
+# )
+#
+# PLATE_TYPE = (
+#     (0, "无"),
+#     (1, "原创人生")
+# )
 
-PLATE_TYPE = (
-    (0, "无"),
-    (1, "原创人生")
-)
+
+class Classification(models.Model):
+    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(verbose_name="标签", max_length=500)
+
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
+
+    class Meta:
+        verbose_name = '分类'
+        verbose_name_plural = verbose_name
+        ordering = ['-date_joined']
+
+    def __str__(self):
+        return self.name
+
+
+class Plate(models.Model):
+    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(verbose_name="板块", max_length=500)
+
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
+
+    class Meta:
+        verbose_name = '板块'
+        verbose_name_plural = verbose_name
+        ordering = ['-date_joined']
+
+    def __str__(self):
+        return self.name
 
 
 class Collection(models.Model):
     user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="名称", max_length=500)
     authur = models.CharField(verbose_name="作者", max_length=100, default="无")
-    category = models.IntegerField(verbose_name="类别", default=0)
-    label = models.IntegerField(verbose_name="标签", default=0)
-    plate = models.IntegerField(verbose_name="板块", default=0)
+    category = models.IntegerField(verbose_name="类别", choices=TYPE, default=0)
+    classification = models.ForeignKey(Classification, verbose_name="分类", on_delete=models.SET_NULL, null=True, blank=True)
+    plate = models.ForeignKey(Plate, verbose_name="板块", on_delete=models.SET_NULL, null=True, blank=True)
     introduction = models.TextField(verbose_name="简介", default="无")
     is_look_count = models.IntegerField(verbose_name="点击次数", default=0, help_text="记录书本被点击的次数")
 
@@ -46,9 +78,9 @@ class Chapter(models.Model):
     collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="名称", max_length=500)
     authur = models.CharField(verbose_name="作者", max_length=100, default="无")
-    category = models.IntegerField(verbose_name="类别", default=0)
-    label = models.IntegerField(verbose_name="标签", default=0)
-    plate = models.IntegerField(verbose_name="板块", default=0)
+    category = models.IntegerField(verbose_name="类别", choices=TYPE, default=0)
+    classification = models.ForeignKey(Classification, verbose_name="分类", on_delete=models.SET_NULL, null=True, blank=True)
+    plate = models.ForeignKey(Plate, verbose_name="板块", on_delete=models.SET_NULL, null=True, blank=True)
     introduction = models.TextField(verbose_name="简介", default="无")
     is_look_count = models.IntegerField(verbose_name="点击次数", default=0, help_text="记录书本被点击的次数")
     content = models.TextField(verbose_name="内容", null=True, blank=True)

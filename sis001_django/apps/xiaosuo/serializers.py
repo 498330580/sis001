@@ -24,3 +24,17 @@ class ChapterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chapter
         fields = "__all__"
+
+
+class ClassificationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Classification
+        fields = "__all__"
+
+
+class PlateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Plate
+        fields = "__all__"

@@ -22,12 +22,14 @@ from rest_framework import routers
 
 from rest_framework.authtoken import views
 
-from xiaosuo.views import VisitHistoryViewsSet, CollectionViewsSet, ChapterViewsSet
+from xiaosuo.views import VisitHistoryViewsSet, CollectionViewsSet, ChapterViewsSet, ClassificationViewsSet, PlateViewsSet
 
 router = routers.DefaultRouter(trailing_slash=False)
 router.register(r'lishi', VisitHistoryViewsSet)
 router.register(r'book', CollectionViewsSet)
 router.register(r'zhangjie', ChapterViewsSet)
+router.register(r'fenlei', ClassificationViewsSet)
+router.register(r'bankuai', PlateViewsSet)
 
 from xiaosuo.views import PanDuan
 

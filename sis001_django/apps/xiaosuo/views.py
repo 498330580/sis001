@@ -3,8 +3,8 @@ from django.shortcuts import render
 # Create your views here.
 
 from .models import *
-from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer
-from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter
+from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer, ClassificationSerializer, PlateSerializer
+from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter, ClassificationFilter, PlateFilter
 
 from django.http import HttpResponse, JsonResponse
 from django.views.generic.base import View
@@ -63,7 +63,7 @@ class VisitHistoryViewsSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
     filter_class = VisitHistoryFilter
     search_fields = ['user__username', 'url']
-    ordering_fields = ['user', 'url']
+    ordering_fields = ['user', 'url', 'date_joined', 'update_time']
 
     # 超级管理员显示全部，其他显示自己的数据
     def get_queryset(self):
@@ -83,8 +83,8 @@ class CollectionViewsSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
     filter_class = CollectionFilter
-    search_fields = ['user__username', 'name', 'category', 'label', 'plate']
-    ordering_fields = ['user', 'name', 'category', 'label', 'plate']
+    search_fields = ['user__username', 'name', 'authur', 'introduction']
+    ordering_fields = ['user', 'name', 'category', 'classification', 'plate', 'date_joined', 'update_time']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -97,8 +97,36 @@ class ChapterViewsSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
     filter_class = ChapterFilter
-    search_fields = ['user__username', 'name', 'category', 'label', 'plate']
-    ordering_fields = ['user', 'name', 'category', 'label', 'plate']
+    search_fields = ['user__username', 'name', 'authur', 'introduction', 'content']
+    ordering_fields = ['user', 'name', 'category', 'classification', 'plate', 'date_joined', 'update_time']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class ClassificationViewsSet(viewsets.ModelViewSet):
+    queryset = Classification.objects.all()
+    serializer_class = ClassificationSerializer
+    pagination_class = ListSetPagination  # 分页器
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
+    filter_class = ClassificationFilter
+    search_fields = ['user__username', 'name']
+    ordering_fields = ['user', 'name', 'date_joined', 'update_time']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class PlateViewsSet(viewsets.ModelViewSet):
+    queryset = Plate.objects.all()
+    serializer_class = PlateSerializer
+    pagination_class = ListSetPagination  # 分页器
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
+    filter_class = PlateFilter
+    search_fields = ['user__username', 'name']
+    ordering_fields = ['user', 'name', 'date_joined', 'update_time']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
