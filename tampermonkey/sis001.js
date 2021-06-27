@@ -1,10 +1,10 @@
 // @require      https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.slim.min.js
 
 (function () {
-    'use strict';   //严格模式
+    // 'use strict';   //严格模式
 
-    var host = "http://127.0.0.1:8000/"
-    var token = "27171cc46f6bda2668ca755810635e577f600fa4"
+    var host = "http://127.0.0.1:8000/"     // 这里填写你后端的地址
+    var token = "27171cc46f6bda2668ca755810635e577f600fa4"      // 这里填写你后端的token
 
     // function dj(url) {
     //     alert(url);
@@ -41,8 +41,10 @@
                                 GM_xmlhttpRequest({
                                     url:host + "panduan?type=xiaosuo&url=" + get_url,
                                     method: "GET",
+                                    anonymous: true,
                                     headers: {
-                                        "Content-type": "application/json"
+                                        "Content-type": "application/json",
+                                        "Authorization": "Token " + token
                                     },
                                     onload:function(xhr){
                                         let data = JSON.parse(xhr.responseText)
@@ -100,8 +102,10 @@
             GM_xmlhttpRequest({
                 url:host + "panduan?type=xiaosuo&url=" + url,
                 method: "GET",
+                anonymous: true,
                 headers: {
-                    "Content-type": "application/json"
+                    "Content-type": "application/json",
+                    "Authorization": "Token " + token
                 },
                 onload:function(xhr){
                     let data = JSON.parse(xhr.responseText)
@@ -130,12 +134,112 @@
         }
     }
 
+    // 标签保存（返回标签ID）
+    function biaoqiansave() {
+        let biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a")[0].innerText
+        biaoqian = biaoqian.replace('[', '')
+        biaoqian = biaoqian.replace(']', '')
+        GM_xmlhttpRequest({
+            url: host + "api/fenlei?name=" + biaoqian,
+            method :"GET",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                if (JSON.parse(xhr.responseText)["count"] == 0){
+                    GM_xmlhttpRequest({
+                        url: host + "api/fenlei",
+                        method :"POST",
+                        data:JSON.stringify({"name": biaoqian}),
+                        dataType: "json",
+                        anonymous: true,
+                        headers: {
+                            "Content-type": "application/json",
+                            "Authorization": "Token " + token
+                        },
+                        onload:function(xhr){
+                            if (JSON.parse(xhr.responseText)["name"] == biaoqian) {
+                                console.log("标签", biaoqian, "保存成功");
+                                biaoqian_id = JSON.parse(xhr.responseText)["id"]
+                            } else {
+                                console.log("标签", biaoqian, "保存失败");
+                                return null
+                            }
+                        }
+                    })
+                } else {
+                    console.log("标签", biaoqian, "已存在");
+                    console.log(typeof JSON.parse(xhr.responseText)["results"][0]['id']);
+                    biaoqian_id = JSON.parse(xhr.responseText)["results"][0]['id'];
+                }
+            },
+            // onerror: function(e) {
+            //     console.log("标签错误：", e);
+            //     return null;
+            // }
+        })
+    }
+
+    // 版块保存（返回版块ID）
+    function bankuaisave(bankuai) {
+        // var bankuai = document.getElementById("nav").getElementsByTagName("a")[-1].innerText
+        // bankuai = bankuai.replace('[', '')
+        // bankuai = biaoqian.replace(']', '')
+        GM_xmlhttpRequest({
+            url: host + "api/bankuai?name=" + bankuai,
+            method :"GET",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                if (JSON.parse(xhr.responseText)["count"] == 0){
+                    GM_xmlhttpRequest({
+                        url: host + "api/bankuai",
+                        method :"POST",
+                        data:JSON.stringify({"name": bankuai}),
+                        dataType: "json",
+                        anonymous: true,
+                        headers: {
+                            "Content-type": "application/json",
+                            "Authorization": "Token " + token
+                        },
+                        onload:function(xhr){
+                            if (JSON.parse(xhr.responseText)["name"] == bankuai) {
+                                console.log("版块", bankuai, "保存成功");
+                                bankuai_id = JSON.parse(xhr.responseText)["id"]
+                            } else {
+                                console.log("版块", bankuai, "保存失败");
+                                return null
+                            }
+                        }
+                    })
+                } else {
+                    console.log("版块", bankuai, "已存在");
+                    bankuai_id = JSON.parse(xhr.responseText)["results"][0]['id'];
+                }
+            },
+            // onerror: function(e) {
+            //     console.log("标签错误：", e);
+            //     return null;
+            // }
+        })
+    }
+
     // 详情页编辑
     function xiangqing() {
         let h1 = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0];
         let url = window.location.href;
         let a = document.getElementById("nav").getElementsByTagName("a")
         let url_bankuai = a[a.length-1].href
+        let bankuai = a[a.length-1].innerText
+        
+        bankuaisave(bankuai)
+        biaoqiansave()
+
         if (xiaosuo(url_bankuai)) {
         document.getElementById("foruminfo").innerHTML += `<br><div id="save" style="border: 2px solid lightblue;text-align:center;border-style: outset;background-color: lightblue;padding: 5px;">
         <i class="iconfont icon-leibie" title="保存的数据类别">类别：</i>
@@ -144,13 +248,16 @@
         <input type="number" v-model="indexdata" style="text-align:center;text-align-last:center;">
         <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
         <input type="text"v-model="book"style="width:200x;">
-        <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo()">提交</button>
+        <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo(`+biaoqian_id+','+bankuai_id+`)">提交</button>
         </div>`}
+        // 浏览状态判断
         GM_xmlhttpRequest({
             url:host + "panduan?type=xiaosuo&url=" + url,
             method: "GET",
+            anonymous: true,
             headers: {
-                "Content-type": "application/json"
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
             },
             onload:function(xhr){
                 let data = JSON.parse(xhr.responseText)
@@ -169,20 +276,21 @@
 
                     if (ls) {
                         h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                        console.log("浏览记录已存在");
                     } else {
                         GM_xmlhttpRequest({
                             url:host + "api/lishi",
                             method :"POST",
                             data:JSON.stringify({"url": url}),
                             dataType: "json",
-                            anonymous: Request,
+                            anonymous: true,
                             headers: {
                                 "Content-type": "application/json",
                                 "Authorization": "Token " + token
                             },
                             onload:function(xhr){
                                 // console.log(JSON.parse(xhr.responseText));
-                                console.log(xhr);
+                                // console.log(xhr.responseText);
                                 if (JSON.parse(xhr.responseText)["url"] == url) {
                                     h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                                     console.log("浏览记录保存成功");
@@ -197,26 +305,63 @@
                 }
             }
         });
+
         // console.log(document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText);
-        return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText
+        return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0]
     }
 
-    // 测试
-    function ceshi() {
-        jQuery.ajax({
-            type: "get",
-            url: "http://127.0.0.1:8000/api/lishi",
-            dataType: "json",
-            success:function (r) {
-                console.log(r);
+    // 章节储存
+    function zhangjiesave(data) {
+        GM_xmlhttpRequest({
+            url:host +"api/zhangjie?url=" + url,
+            method :"GET",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                if (JSON.parse(xhr.responseText)["count"] == 0){
+                GM_xmlhttpRequest({
+                    url:host+"api/zhangjie",
+                    method :"POST",
+                    // data:JSON.stringify({"name": title.innerText, "index": this.indexdata, "url": url, "collection": book_id}),
+                    data:JSON.stringify(data),
+                    dataType: "json",
+                    anonymous: true,
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": "Token " + token
+                    },
+                    onload:function(xhr){
+                        if (JSON.parse(xhr.responseText)['url']==data["url"]){
+                            console.log("章节：", data["name"], "保存成功");
+                            alert("保存成功！");
+                            document.getElementById("save").remove();
+                            document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
+                            document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                        } else {
+                            console.log("章节：", data["name"], "保存失败");
+                            alert("保存失败！");
+                        }
+                    }
+                })
+                } else {
+                    console.log("章节已存在");
+                }
             }
         })
     }
 
     console.log("sis001脚本运行")
-    ceshi()
     var url = window.location.href;
-    var title = "";
+    var title = "";     //小说章节标题
+    var book = "";      //小说书籍标题
+    // var book_id = 1;    //小说书籍储存ID
+    var index_int = 0;  //小说章节索引
+    var type_int = 0;   //小说章节类型
+    var bankuai_id = null;  //版块ID
+    var biaoqian_id = null;  //标签ID
     var url_zz = /^http.*?forum.*/ig;
     if (url_zz.test(url)) {
         document.getElementsByTagName("head")[0].innerHTML += '<link rel="stylesheet" href="//at.alicdn.com/t/font_2616980_8iw3dgaotf4.css">';
@@ -245,22 +390,34 @@
         el: "#save",
         data: {
             typelist: [
-                {id: "小说", name: "小说"}
+                {id: 0, name: "无"},
+                {id: 1, name: "小说"},
+                {id: 2, name: "图片"},
             ],
-            type: "",
+            type: 0,
             book: "",
-            indexdata: 1
+            indexdata: 1,
+            // bankuai_id = 0,  //版块ID
+            // biaoqian_id = 0,  //标签ID
         }, methods: {
-            savexiapsuo(){
+            // 保存按钮
+            savexiapsuo(bq,bk){
                 if (!this.type) {
                     alert("类型不能为空");
                 } else if (!this.book){
                     alert("书籍不能为空");
                 } else {
-                    var book_id = 0;
+                    // 书籍保存
+                    book = this.book;
+                    index_int = this.indexdata;
+                    type_int = this.type;
+                    // bankuai_id = bk;
+                    // biaoqian_id = bq;
+                    console.log(bankuai_id, biaoqian_id);
                     GM_xmlhttpRequest({
-                        url: host+"/api/book?name=" + this.book,
+                        url: host+"api/book?name=" + book,
                         method :"GET",
+                        anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
@@ -268,86 +425,33 @@
                         onload:function(xhr){
                             if (JSON.parse(xhr.responseText)["count"] == 0){
                                 GM_xmlhttpRequest({
-                                    url: host+"/api/book",
+                                    url: host+"api/book",
                                     method :"POST",
-                                    data:JSON.stringify({"name": this.book}),
+                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}),
                                     dataType: "json",
+                                    anonymous: true,
                                     headers: {
                                         "Content-type": "application/json",
                                         "Authorization": "Token " + token
                                     },
                                     onload:function(xhr){
-                                        if (JSON.parse(xhr.responseText)['name']==this.book){
-                                            console.log("Book",this.book, '储存成功');
-                                            book_id= JSON.parse(xhr.responseText)['id']
+                                        if (JSON.parse(xhr.responseText)['name']==book){
+                                            console.log("Book",book, '储存成功');
+                                            // book_id = JSON.parse(xhr.responseText)['id']
+                                            zhangjiesave({"name": title.innerText, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
+                                            
                                         } else {
-                                            console.log("Book",this.book, '储存失败');
-                                            book_id = 0;
+                                            console.log("Book",book, '储存失败');
                                         }
                                     }
                                 })
+                            } else {
+                                console.log("Book",book, "已存在");
+                                // book_id = JSON.parse(xhr.responseText)["results"][0]['id']
+                                zhangjiesave({"name": title.innerText, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
                             }
                         }
                     });
-
-                    if (book_id != 0) {
-                        GM_xmlhttpRequest({
-                            url:host +"/api/zhangjie?url=" + url,
-                            method :"GET",
-                            headers: {
-                                "Content-type": "application/json",
-                                "Authorization": "Token " + token
-                            },
-                            onload:function(xhr){
-                                if (JSON.parse(xhr.responseText)["count"] == 0){
-                                GM_xmlhttpRequest({
-                                    url:host+"/api/zhangjie",
-                                    method :"POST",
-                                    data:JSON.stringify({"name": title, "index": this.indexdata, "url": url}),
-                                    dataType: "json",
-                                    headers: {
-                                        "Content-type": "application/json",
-                                        "Authorization": "Token " + token
-                                    },
-                                    onload:function(xhr){
-                                        if (JSON.parse(xhr.responseText)['url']==url){
-                                            console.log("章节：", title, "保存成功");
-                                            alert("保存成功！");
-                                            document.getElementById("save").remove();
-                                            document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
-                                            document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                                        } else {
-                                            console.log("章节：", title, "保存失败");
-                                            alert("保存失败！");
-                                        }
-                                    }
-                                })
-                                }
-                            }
-                        })
-                    } else {
-                        alert("Book保存失败");
-                    }
-
-                    // GM_xmlhttpRequest({
-                    //     url:host + "xiaosuo?type=xiaosuo",
-                    //     method :"POST",
-                    //     data:JSON.stringify({"type": this.type, "book": this.book, "index": this.indexdata, "title": title, "url": url, "爬取状态": "未爬取", "下载状态": "未下载", "内容": ""}),
-                    //     dataType: "json",
-                    //     headers: {
-                    //         "Content-type": "application/json"
-                    //     },
-                    //     onload:function(xhr){
-                    //         if (JSON.parse(xhr.responseText)["mess"] == "创建成功") {
-                    //             alert("保存成功！");
-                    //             document.getElementById("save").remove();
-                    //             document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
-                    //             document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                    //         } else {
-                    //             alert("保存失败！");
-                    //         }
-                    //     }
-                    // });
                 }
             }
         }
