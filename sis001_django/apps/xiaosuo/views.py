@@ -6,7 +6,7 @@ from .models import *
 from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer, ClassificationSerializer, PlateSerializer
 from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter, ClassificationFilter, PlateFilter
 
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.generic.base import View
 
 from rest_framework import viewsets, mixins, permissions, filters
@@ -57,11 +57,11 @@ class ListSetPagination(PageNumberPagination):
 
 class VisitHistoryViewsSet(viewsets.ModelViewSet):
     queryset = VisitHistory.objects.all()
-    serializer_class = VisitHistorySerializer
+    serializer_class = VisitHistorySerializer   # 控制显示字段
     pagination_class = ListSetPagination  # 分页器
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
-    filter_class = VisitHistoryFilter
+    filter_class = VisitHistoryFilter   # 控制可以筛选的字段
     search_fields = ['user__username', 'url']
     ordering_fields = ['user', 'url', 'date_joined', 'update_time']
 

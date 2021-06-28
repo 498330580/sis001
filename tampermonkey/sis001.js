@@ -171,7 +171,7 @@
                     })
                 } else {
                     console.log("标签", biaoqian, "已存在");
-                    console.log(typeof JSON.parse(xhr.responseText)["results"][0]['id']);
+                    // console.log(typeof JSON.parse(xhr.responseText)["results"][0]['id']);
                     biaoqian_id = JSON.parse(xhr.responseText)["results"][0]['id'];
                 }
             },

@@ -85,7 +85,7 @@ class Chapter(models.Model):
     is_look_count = models.IntegerField(verbose_name="点击次数", default=0, help_text="记录书本被点击的次数")
     content = models.TextField(verbose_name="内容", null=True, blank=True)
     url = models.URLField(verbose_name="URL")
-    crawling_status = models.BooleanField(verbose_name="下载状态", default=False, help_text="用于判断后台脚本是否已爬取内容")
+    crawling_status = models.BooleanField(verbose_name="爬取状态", default=False, help_text="用于判断后台脚本是否已爬取内容")
     index = models.IntegerField(verbose_name="索引", default=0)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
