@@ -3,8 +3,6 @@
 (function () {
     // 'use strict';   //严格模式
 
-    // import Vue from 'vue'
-
     var host = "http://127.0.0.1:8000/"     // 这里填写你后端的地址
     var token = "27171cc46f6bda2668ca755810635e577f600fa4"      // 这里填写你后端的token
 
@@ -17,12 +15,9 @@
         // let url = window.location.href;
         // let url_zz = /^http.*?forum-(3|2|8|9)(1|2|3|6|7|8)(2|3|4|9|)-.*tml$/ig;
         let url_zz = /^http.*?forum-((322)|(383)|(334)|(279)|(359)|(31)|(83)|(96))-.*tml$/ig;
-        let url_zz1 = /^http:.*?fid=((322)|(383)|(334)|(279)|(359)|(31)|(83)|(96))&.*/
-        if (url_zz.test(url) || url_zz1.test(url)) {
-            type_int = 1;
+        if (url_zz.test(url)) {
             return true
         } else {
-            type_int = 0;
             return false
         }
     }
@@ -139,11 +134,12 @@
         }
     }
 
-    // 标签保存（返回标签ID）
+    // 标签保存（返回章节ID）
     function biaoqiansave() {
         let biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a")[0].innerText
         biaoqian = biaoqian.replace('[', '')
         biaoqian = biaoqian.replace(']', '')
+        console.log(biaoqian);
         GM_xmlhttpRequest({
             url: host + "api/fenlei?name=" + biaoqian,
             method :"GET",
@@ -167,7 +163,7 @@
                         onload:function(xhr){
                             if (JSON.parse(xhr.responseText)["name"] == biaoqian) {
                                 console.log("标签", biaoqian, "保存成功");
-                                biaoqian_id = JSON.parse(xhr.responseText)["id"]
+                                return JSON.parse(xhr.responseText)["id"]
                             } else {
                                 console.log("标签", biaoqian, "保存失败");
                                 return null
@@ -176,8 +172,7 @@
                     })
                 } else {
                     console.log("标签", biaoqian, "已存在");
-                    // console.log(typeof JSON.parse(xhr.responseText)["results"][0]['id']);
-                    biaoqian_id = JSON.parse(xhr.responseText)["results"][0]['id'];
+                    return JSON.parse(xhr.responseText)["results"][0]['id'];
                 }
             },
             // onerror: function(e) {
@@ -215,7 +210,7 @@
                         onload:function(xhr){
                             if (JSON.parse(xhr.responseText)["name"] == bankuai) {
                                 console.log("版块", bankuai, "保存成功");
-                                bankuai_id = JSON.parse(xhr.responseText)["id"]
+                                return JSON.parse(xhr.responseText)["id"]
                             } else {
                                 console.log("版块", bankuai, "保存失败");
                                 return null
@@ -224,7 +219,7 @@
                     })
                 } else {
                     console.log("版块", bankuai, "已存在");
-                    bankuai_id = JSON.parse(xhr.responseText)["results"][0]['id'];
+                    return JSON.parse(xhr.responseText)["results"][0]['id'];
                 }
             },
             // onerror: function(e) {
@@ -241,22 +236,20 @@
         let a = document.getElementById("nav").getElementsByTagName("a")
         let url_bankuai = a[a.length-1].href
         let bankuai = a[a.length-1].innerText
-        let introduction = document.getElementsByName("description")[0].content.replace(/ SiS001! Board  - \[第一会所 邀请注册\]/ig,"")
         
-        bankuaisave(bankuai)
-        biaoqiansave()
+        bankuai_id = bankuaisave(bankuai)
+        biaoqian_id = biaoqiansave()
 
         if (xiaosuo(url_bankuai)) {
-            document.getElementById("foruminfo").innerHTML += `<br><div id="save" style="border: 2px solid lightblue;text-align:center;border-style: outset;background-color: lightblue;padding: 5px;">
-            <i class="iconfont icon-leibie" title="保存的数据类别">类别：</i>
-            <select name="public-choice" v-model="type" style="width:149px;height:25px;text-align:center;text-align-last:center;"><option :value="coupon.id" v-for="coupon in typelist">{{coupon.name}}</option></select>
-            <i class="iconfont icon-xuhao" title="建议填写当前的开始章号">序号:</i>
-            <input type="number" v-model="indexdata" style="text-align:center;text-align-last:center;">
-            <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
-            <input id="book1" type="text" v-model="book_vue" style="width:200x;">
-            <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo()">提交</button>
-            </div>`}
-
+        document.getElementById("foruminfo").innerHTML += `<br><div id="save" style="border: 2px solid lightblue;text-align:center;border-style: outset;background-color: lightblue;padding: 5px;">
+        <i class="iconfont icon-leibie" title="保存的数据类别">类别：</i>
+        <select name="public-choice" v-model="type" style="width:149px;height:25px;text-align:center;text-align-last:center;"><option :value="coupon.id" v-for="coupon in typelist">{{coupon.name}}</option></select>
+        <i class="iconfont icon-xuhao" title="建议填写当前的开始章号">序号:</i>
+        <input type="number" v-model="indexdata" style="text-align:center;text-align-last:center;">
+        <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
+        <input type="text"v-model="book"style="width:200x;">
+        <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo(`+biaoqian_id+','+bankuai_id+`)">提交</button>
+        </div>`}
         // 浏览状态判断
         GM_xmlhttpRequest({
             url:host + "panduan?type=xiaosuo&url=" + url,
@@ -314,30 +307,7 @@
         });
 
         // console.log(document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText);
-        // return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].childNodes[1].nodeValue.trim()    //获取标题，不包含标签
-        title = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].childNodes[1].nodeValue.trim()    //获取标题，不包含标签
-        // return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0]
-        if (/【(.*?)】/ig.exec(title)){
-            book = /【(.*?)】/ig.exec(title)[1];
-            // console.log(book);
-            // // console.log(document.getElementById("book1"))
-            // console.log("我在执行");
-        } else {
-            book = ""
-        }
-        if (/【作者：(.*?)】/ig.exec(title)) {
-            zuozhe = /【作者：(.*?)】/ig.exec(title)[1]
-        } else {
-            zuozhe = "无"
-        }
-        if (/（(\d+.*?)(-|）)/ig.exec(title)) {
-            index_int = parseInt(/（(\d+.*?)(-|）)/ig.exec(title)[1])
-        } else {
-            index_int = 0
-        }
-
-        
-
+        return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0]
     }
 
     // 章节储存
@@ -383,14 +353,10 @@
         })
     }
 
-    
-
     console.log("sis001脚本运行")
     var url = window.location.href;
     var title = "";     //小说章节标题
     var book = "";      //小说书籍标题
-    var zuozhe = "";      //作者
-    var introduction = "";  //简介
     // var book_id = 1;    //小说书籍储存ID
     var index_int = 0;  //小说章节索引
     var type_int = 0;   //小说章节类型
@@ -413,16 +379,14 @@
             if (!thread_zz.test(url)) {
                 list();
             } else {
-                xiangqing();
-                // title = xiangqing();
+                title = xiangqing();
             }
             
         }
     }
 
     /*Vue操作*/
-    var vm = new Vue({
-    // window.$vm = new Vue({
+    var app = new Vue({
         el: "#save",
         data: {
             typelist: [
@@ -430,26 +394,24 @@
                 {id: 1, name: "小说"},
                 {id: 2, name: "图片"},
             ],
-            type: type_int,
-            book_vue: book,
-            indexdata: index_int,
-            // bankuai_id = 0,  //版块ID
-            // biaoqian_id = 0,  //标签ID
+            type: 0,
+            book: "",
+            indexdata: 1
         }, methods: {
             // 保存按钮
             savexiapsuo(bq,bk){
                 if (!this.type) {
                     alert("类型不能为空");
-                } else if (!this.book_vue){
+                } else if (!this.book){
                     alert("书籍不能为空");
                 } else {
                     // 书籍保存
-                    book = this.book_vue;
+                    book = this.book;
                     index_int = this.indexdata;
                     type_int = this.type;
-                    // bankuai_id = bk;
-                    // biaoqian_id = bq;
-                    console.log(bankuai_id, biaoqian_id);
+                    bankuai_id = bk;
+                    biaoqian_id = bq;
+                    console.log(bk, bq);
                     GM_xmlhttpRequest({
                         url: host+"api/book?name=" + book,
                         method :"GET",
@@ -463,7 +425,7 @@
                                 GM_xmlhttpRequest({
                                     url: host+"api/book",
                                     method :"POST",
-                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id ,"authur":zuozhe, "plate": bankuai_id, "introduction":introduction}),
+                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}),
                                     dataType: "json",
                                     anonymous: true,
                                     headers: {
@@ -474,7 +436,7 @@
                                         if (JSON.parse(xhr.responseText)['name']==book){
                                             console.log("Book",book, '储存成功');
                                             // book_id = JSON.parse(xhr.responseText)['id']
-                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id, "introduction":introduction})
+                                            zhangjiesave({"name": title.innerText, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
                                             
                                         } else {
                                             console.log("Book",book, '储存失败');
@@ -484,13 +446,13 @@
                             } else {
                                 console.log("Book",book, "已存在");
                                 // book_id = JSON.parse(xhr.responseText)["results"][0]['id']
-                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id, "introduction":introduction})
+                                zhangjiesave({"name": title.innerText, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
                             }
                         }
                     });
                 }
             }
         }
-    });    
+    });
     
 })();
