@@ -273,46 +273,6 @@
                             }
                         }
                     });
-
-                    // 检查用户是否浏览过网址
-                    // GM_xmlhttpRequest({
-                    //     url:host + "api/user_url?url=" + url,
-                    //     method :"GET",
-                    //     anonymous: true,
-                    //     headers: {
-                    //         "Content-type": "application/json",
-                    //         "Authorization": "Token " + token
-                    //     },
-                    //     onload:function(xhr){
-                    //         if (JSON.parse(xhr.responseText)["count"] != 0) {
-                    //             console.log("用户已浏览过该url");
-                    //             html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
-                    //         } else {
-                    //             // 用户未浏览过url
-                    //             console.log("用户未浏览过该url");
-                    //             // 关联数据库url与用户（添加url到用户浏览）
-                    //             GM_xmlhttpRequest({
-                    //                 url:host + "api/user_url",
-                    //                 method :"POST",
-                    //                 data:JSON.stringify({"lishi": data["results"][0]["id"]}),
-                    //                 dataType: "json",
-                    //                 anonymous: true,
-                    //                 headers: {
-                    //                     "Content-type": "application/json",
-                    //                     "Authorization": "Token " + token
-                    //                 },
-                    //                 onload:function(r){
-                    //                     if (JSON.parse(r.responseText)["lishi"] == data["results"][0]["id"]) {
-                    //                         console.log("插入用户记录成功");
-                    //                         html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
-                    //                     } else {
-                    //                         html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
-                    //                     }
-                    //                 }
-                    //             });
-                    //         }
-                    //     }
-                    // })
                 } else {
                     // url不存在
                     // 创建url
@@ -362,7 +322,37 @@
         
     }
 
+    // 获取当前详情页的章节对应书籍，并将书籍加入用户收藏
+    function add_book_user(url) {
+        GM_xmlhttpRequest({})
+    }
+
     // 判断book是否已存在于数据库中
+    function addbook(url) {
+        //检查数据库中该章节记录是否存在
+        GM_xmlhttpRequest({
+            url:host +"api/zhangjie?url=" + url,
+            method :"GET",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                if (JSON.parse(xhr.responseText)["count"] == 0){
+                    // 数据库中该章节记录不存在
+                    console.log("数据库中不存在章节记录");
+                    document.getElementById("book").remove();
+                } else {
+                    // 数据库中该章节记录存在
+                    console.log("数据库中已存在章节记录");
+                    // zhangjie_data = false;
+                    document.getElementById("zhangjie").remove();
+                    book_id = JSON.parse(xhr.responseText)["results"][0]["collection"]
+                }
+            }
+        })
+    }
 
     // 详情页编辑
     function xiangqing() {
@@ -379,6 +369,7 @@
 
         if (xiaosuo(url_bankuai)) {
             document.getElementById("foruminfo").innerHTML += `<br><div id="save" style="border: 2px solid lightblue;text-align:center;border-style: outset;background-color: lightblue;padding: 5px;">
+            <div id="zhangjie">
             <i class="iconfont icon-leibie" title="保存的数据类别">类别：</i>
             <select name="public-choice" v-model="type" style="width:149px;height:25px;text-align:center;text-align-last:center;"><option :value="coupon.id" v-for="coupon in typelist">{{coupon.name}}</option></select>
             <i class="iconfont icon-xuhao" title="建议填写当前的开始章号">序号:</i>
@@ -386,9 +377,15 @@
             <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
             <input id="book1" type="text" v-model="book_vue" style="width:200x;">
             <button class="iconfont icon-baocun" style="font-size:100%;" @click="savexiapsuo()">提交</button>
+            </div>
+            <div id="book">
+            <i class="iconfont icon-book" title="想要收集到那本书下面">书籍：</i>
+            <input id="book2" type="text" v-model="book_vue" style="width:200x;" disabled="disabled">
+            <button class="iconfont icon-baocun" style="font-size:100%;" @click="shouchang()">提交</button>
+            </div>
             </div>`}
 
-        // 浏览状态判断
+        // 浏览状态判断与书籍状态
         GM_xmlhttpRequest({
             url:host + "panduan?type=xiaosuo&url=" + url,
             method: "GET",
@@ -403,41 +400,27 @@
                     let xs = data["data"]["xiaosuo"]
                     let ls = data["data"]["lishi"]
 
+                    // 判断url是否为小说栏目
                     if (xiaosuo(url_bankuai)) {
+                        // 判断当前账户是否收藏过该书籍
                         if (xs) {
+                            console.log("书籍已收藏");
                             h1.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
                             document.getElementById("save").remove();
                         } else {
+                            console.log("书籍未收藏");
                             h1.innerHTML += '<i class="iconfont icon-bianzu24" style="color:#000000;font-size:75%;" title="未保存"></i>';
+                            addbook(url);
                         }
                     }
 
+                    // 判断当前账户是否已浏览过该网址
                     if (ls) {
                         h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                         console.log("浏览记录已存在");
                     } else {
-                        addurl(h1, url)
-                        // GM_xmlhttpRequest({
-                        //     url:host + "api/lishi",
-                        //     method :"POST",
-                        //     data:JSON.stringify({"url": url}),
-                        //     dataType: "json",
-                        //     anonymous: true,
-                        //     headers: {
-                        //         "Content-type": "application/json",
-                        //         "Authorization": "Token " + token
-                        //     },
-                        //     onload:function(xhr){
-                        //         // console.log(JSON.parse(xhr.responseText));
-                        //         // console.log(xhr.responseText);
-                        //         if (JSON.parse(xhr.responseText)["url"] == url) {
-                        //             h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
-                        //             console.log("浏览记录保存成功");
-                        //         } else {
-                        //             h1.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
-                        //         }
-                        //     }
-                        // });
+                        console.log("浏览记录不存在");
+                        // addurl(h1, url)
                     }
                 } else {
                     console.log("错误，未传递URL");
@@ -465,7 +448,7 @@
         if (/（(\d+.*?)(-|）)/ig.exec(title)) {
             index_int = parseInt(/（(\d+.*?)(-|）)/ig.exec(title)[1])
         } else {
-            index_int = 0
+            index_int = 1
         }
 
         
@@ -473,7 +456,28 @@
     }
 
     // 章节储存
-    function zhangjiesave(data) {
+    function zhangjiesave(data, b_id) {
+        // 书籍加入用户收藏
+        GM_xmlhttpRequest({
+            url: host+"api/user_coll",
+            method :"POST",
+            data:JSON.stringify({"collection": b_id, "collect": true}),
+            dataType: "json",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                if (JSON.parse(xhr.responseText)['collection']==b_id){
+                    console.log("书籍", book, "加入收藏成功");
+                } else {
+                    console.log("书籍", book, "加入收藏失败");
+                }
+            }
+        })
+
+        // 章节储存
         GM_xmlhttpRequest({
             url:host +"api/zhangjie?url=" + url,
             method :"GET",
@@ -523,11 +527,12 @@
     var book = "";      //小说书籍标题
     var zuozhe = "";      //作者
     // var introduction = "";  //简介
-    // var book_id = 1;    //小说书籍储存ID
+    var book_id = 1;    //小说书籍储存ID
     var index_int = 0;  //小说章节索引
     var type_int = 0;   //小说章节类型
     var bankuai_id = null;  //版块ID
     var biaoqian_id = null;  //标签ID
+    // var zhangjie_data = true; // 判断章节在数据库中是否存在
     var url_zz = /^http.*?forum.*/ig;
     if (url_zz.test(url)) {
         document.getElementsByTagName("head")[0].innerHTML += '<link rel="stylesheet" href="//at.alicdn.com/t/font_2616980_8iw3dgaotf4.css">';
@@ -536,18 +541,24 @@
         let search_list_zz = /^http.*?search.*/ig
         if (search_list_zz.test(url)) {
             if (!document.getElementsByName("searchsubmit").length) {
+                console.log("搜索结果页");
                 search();
             } else {
-                console.log("当前是搜索页");
+                console.log("当前是搜索开始页");
             }
         } else {
-            let thread_zz = /^http.*?thread.*/
-            if (!thread_zz.test(url)) {
+            let list_zz = /^http.*?forum\/forum.*?html/ig
+            let thread_zz = /^http.*?thread.*/ig
+
+            if (list_zz.test(url)){
+                console.log("列表页");
                 list();
-            } else {
+            }
+
+            if (thread_zz.test(url)) {
+                console.log("详情页");
                 xiangqing();
             }
-            
         }
     }
 
@@ -564,9 +575,10 @@
             type: type_int,
             book_vue: book,
             indexdata: index_int
+            // zj: false
         }, methods: {
             // 保存按钮
-            savexiapsuo(bq,bk){
+            savexiapsuo(){
                 if (!this.type) {
                     alert("类型不能为空");
                 } else if (!this.book_vue){
@@ -599,7 +611,8 @@
                                     onload:function(xhr){
                                         if (JSON.parse(xhr.responseText)['name']==book){
                                             console.log("Book",book, '储存成功');
-                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
+                                            book_id = JSON.parse(xhr.responseText)["id"]
+                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}, book_id)
                                             
                                         } else {
                                             console.log("Book",book, '储存失败');
@@ -608,11 +621,36 @@
                                 })
                             } else {
                                 console.log("Book",book, "已存在");
-                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
+                                book_id = JSON.parse(xhr.responseText)["results"][0]["id"]
+                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}, book_id)
                             }
                         }
                     });
                 }
+            },
+            // 收藏按钮
+            shouchang(){
+                GM_xmlhttpRequest({
+                    url: host+"api/user_coll",
+                    method :"POST",
+                    data:JSON.stringify({"collection": book_id, "collect": true}),
+                    dataType: "json",
+                    anonymous: true,
+                    headers: {
+                        "Content-type": "application/json",
+                        "Authorization": "Token " + token
+                    },
+                    onload:function(xhr){
+                        if (JSON.parse(xhr.responseText)['collection']==book_id){
+                            console.log("书籍", book, "加入收藏成功");
+                            document.getElementById("save").remove();
+                            document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
+                            document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                        } else {
+                            console.log("书籍", book, "加入收藏失败");
+                        }
+                    }
+                })
             }
         }
     });    
