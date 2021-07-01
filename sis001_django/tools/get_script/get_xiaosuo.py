@@ -4,7 +4,7 @@ import sys
 import time
 from random import randint
 
-import pymongo
+# import pymongo
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -13,7 +13,7 @@ webdriver.ChromeOptions()
 
 # 设定工作目录为当前脚本目录
 jaoben_path = os.path.abspath(os.path.dirname(sys.argv[0]))  # 当前脚本目录
-os.chdir(jaoben_path)  # 设定工作目录为脚本目录
+# os.chdir(jaoben_path)  # 设定工作目录为脚本目录
 
 # 全局变量
 Chrome_path = os.path.join(jaoben_path, "chrome", "chrome.exe")  # 浏览器路径
@@ -24,6 +24,19 @@ Proxy_server = "http://127.0.0.1:10809"  # 代理
 User_Password = ["498330580", "19920124zhy@."]
 Max_sleep = 5  # 爬取最大等待时间
 Login_yanzheng_url = "http://www.sis001.com//forum/forum-184-1.html"  # 登陆验证地址
+
+
+# 引入django环境
+pwd = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(pwd + "../")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sis001_django.settings")
+
+import django
+django.setup()
+
+from xiaosuo.models import *
+from users.models import UserProfile
+user = UserProfile.objects.get(username="498330580")
 
 
 # 等待时间
@@ -155,11 +168,13 @@ class Get_sis001_xiaosuo:
             return data
         else:
             print("输入的不是sis001的网址，请重新输入")
+            return False
 
     def sis001_exit(self):
         self.driver.close()
 
 
+# 检测代理
 def test_proxies(proxies):
     header = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -181,24 +196,22 @@ def test_proxies(proxies):
 # 获取数据并储存数据库
 class Get_Xiaosuo:
     def __init__(self):
-        self.myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.mydb = self.myclient["sis001"]
-        self.xiaosuo = self.mydb["小说"]
-        self.xiaosuojihe = self.mydb["小说书籍"]
         self.sis001 = Get_sis001_xiaosuo()
 
     def get_save(self):
-        print(f'当前数据库中共有{self.xiaosuo.count_documents({"爬取状态": "未爬取"})}条数据未爬取')
+        zhangjie = Chapter.objects.filter(crawling_status=False)
+        print(f'当前数据库中共有{zhangjie.count()}条数据未爬取')
         index = 0
-        for i in self.xiaosuo.find({"爬取状态": "未爬取"}):
+        for chapter in zhangjie:
             index += 1
-            print("当前爬取第{}条数据:\t{}\t{}".format(index, i["title"], i["url"]))
-            data = self.sis001.get_url(i["url"])
+            print(f"正在爬取第{index}条：", chapter)
+            data = self.sis001.get_url(chapter.url)
             t = ""
             for xiaosuo_str in data['data']:
                 t = t + xiaosuo_str
-            self.xiaosuojihe.update_many({"name": i["book"]}, {"$setOnInsert": {"name": i["book"]}}, upsert=True)
-            self.xiaosuo.update_many(i, {"$set": {"爬取状态": "已爬取", "内容": t}})
+            chapter.content = t
+            chapter.crawling_status = True
+            chapter.save()
         print("爬取完毕")
         self.sis001.sis001_exit()
 

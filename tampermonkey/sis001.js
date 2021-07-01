@@ -303,7 +303,7 @@
                                     },
                                     onload:function(r){
                                         if (JSON.parse(r.responseText)["lishi"] == JSON.parse(xhr.responseText)["id"]) {
-                                            console.log("插入用户记录成功");
+                                            console.log("插入用户url记录成功");
                                             html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                                         } else {
                                             html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
@@ -420,7 +420,7 @@
                         console.log("浏览记录已存在");
                     } else {
                         console.log("浏览记录不存在");
-                        // addurl(h1, url)
+                        addurl(h1, url)
                     }
                 } else {
                     console.log("错误，未传递URL");
