@@ -21,7 +21,7 @@ TYPE = (
 
 # 分类
 class Classification(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="标签", max_length=500)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -38,7 +38,7 @@ class Classification(models.Model):
 
 # 版块
 class Plate(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="板块", max_length=500)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -55,7 +55,7 @@ class Plate(models.Model):
 
 # 合集（BOOK)
 class Collection(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="名称", max_length=500)
     authur = models.CharField(verbose_name="作者", max_length=100, default="无")
     category = models.IntegerField(verbose_name="类别", choices=TYPE, default=0)
@@ -78,7 +78,7 @@ class Collection(models.Model):
 
 # 章节
 class Chapter(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="添加人", on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
     collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(verbose_name="名称", max_length=500)
     authur = models.CharField(verbose_name="作者", max_length=100, default="无")
@@ -98,7 +98,7 @@ class Chapter(models.Model):
     class Meta:
         verbose_name = '章节'
         verbose_name_plural = verbose_name
-        ordering = ["index", '-date_joined']
+        ordering = ['collection', "index", '-date_joined']
 
     def __str__(self):
         return self.name
@@ -106,33 +106,34 @@ class Chapter(models.Model):
 
 # sis001已访问的网页
 class VisitHistory(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.SET_NULL, null=True, blank=True)
-    url = models.URLField(verbose_name="URL")
+    user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
+    url = models.URLField(verbose_name="URL", db_index=True, unique=True)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
 
     class Meta:
-        verbose_name = 'sis001网站访问历史'
+        verbose_name = '用户已访问过的sis001网站网址'
         verbose_name_plural = verbose_name
         ordering = ['-date_joined']
 
     def __str__(self):
-        return self.user
+        return self.url
 
 
-# 用户合集（BOOK）的收藏状态（对于自己的前端，判断是否加入收藏）
+# 用户与合集的状态
 class CollectionCount(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="用户", on_delete=models.CASCADE, null=True, blank=True)
     collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.CASCADE, null=True, blank=True)
     count = models.IntegerField(verbose_name="个人点击次数", default=0)
-    collect = models.BooleanField(verbose_name="是否收藏", default=False)
+    addbook = models.BooleanField(verbose_name="是否加入书架", help_text="判断个人看书页面是否将书加入书架", default=False)
+    collect = models.BooleanField(verbose_name="是否加入收藏", help_text="判断油猴插件界面是否保存", default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
 
     class Meta:
-        verbose_name = '用户合集状态'
+        verbose_name = '用户与合集状态'
         verbose_name_plural = verbose_name
         ordering = ['count', '-date_joined']
 
@@ -140,21 +141,21 @@ class CollectionCount(models.Model):
         return f"{self.user}-{self.collection}-{self.count}"
 
 
-# # 用户合集（BOOK）的收藏状态（对于sis001网站，用于判断是否储存数据库）
-# class CollectionCode(models.Model):
-#     user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, null=True, blank=True)
-#     collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.CASCADE, null=True, blank=True)
-#
-#     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
-#     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
-#
-#     class Meta:
-#         verbose_name = '用户合集在sis001上的状态'
-#         verbose_name_plural = verbose_name
-#         ordering = ['count', '-date_joined']
-#
-#     def __str__(self):
-#         return f"{self.user}-{self.collection}"
+# 用户与网址记录的状态
+class UserToVisitHistory(models.Model):
+    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, null=True, blank=True)
+    lishi = models.ForeignKey(VisitHistory, verbose_name="访问网址ID", on_delete=models.CASCADE, null=True, blank=True)
+
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
+    update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
+
+    class Meta:
+        verbose_name = '用户与网址状态'
+        verbose_name_plural = verbose_name
+        ordering = ['-date_joined']
+
+    def __str__(self):
+        return f"{self.user}-{self.lishi}"
 
 
 # 用户章节的状态（对于自己的前端）
@@ -169,7 +170,7 @@ class ChapterCode(models.Model):
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
 
     class Meta:
-        verbose_name = '用户章节观看状态'
+        verbose_name = '用户章节观看状态（个人进度）'
         verbose_name_plural = verbose_name
         ordering = ['count', '-date_joined']
 

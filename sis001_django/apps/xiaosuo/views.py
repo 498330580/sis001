@@ -3,39 +3,48 @@ from django.shortcuts import render
 # Create your views here.
 
 from .models import *
-from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer, ClassificationSerializer, PlateSerializer
-from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter, ClassificationFilter, PlateFilter
+from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer, ClassificationSerializer, PlateSerializer, UserToVisitHistorySerializer, CollectionCountSerializer
+from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter, ClassificationFilter, PlateFilter, UserToVisitHistoryFilter, CollectionCountFilter
 
-from django.http import HttpResponse
-from django.views.generic.base import View
+# from django.http import HttpResponse
+# from django.views.generic.base import View
 
-from rest_framework import viewsets, mixins, permissions, filters
+from rest_framework import viewsets, mixins, permissions, filters, views
 from rest_framework.pagination import PageNumberPagination
 from django_filters.rest_framework import DjangoFilterBackend
 
 # from rest_framework.views import APIView
-# from rest_framework.response import Response
+from rest_framework.response import Response
 # from rest_framework import status
-import json
 
 
-class PanDuan(View):
-    def get(self, request):
+class PanDuan(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]  # 权限
+
+    def get(self, request, format=None):
         type_str = request.GET.get("type")
         url_str = request.GET.get("url")
         if not type_str:
-            return HttpResponse(json.dumps({"mess": "未传递类型"}), content_type="application/json")
+            return Response({"mess": "未传递类型"})
 
         if not url_str:
-            return HttpResponse(json.dumps({"mess": "错误，未传递URL"}), content_type="application/json")
+            return Response({"mess": "错误，未传递URL"})
 
         if type_str == "xiaosuo":
             xiaosuo = False
             lishi = False
-            if VisitHistory.objects.filter(url=url_str):
+
+            if UserToVisitHistory.objects.filter(user=request.user, lishi__url=url_str):
                 lishi = True
-            if Chapter.objects.filter(url=url_str):
+
+            # if VisitHistory.objects.filter(url=url_str):
+            #     lishi = True
+
+            if CollectionCount.objects.filter(user=request.user, collect=True, collection__chapter__url=url_str):
                 xiaosuo = True
+
+            # if Chapter.objects.filter(url=url_str):
+            #     xiaosuo = True
             data = {
                 "mess": "成功",
                 "data": {
@@ -43,9 +52,9 @@ class PanDuan(View):
                     "lishi": lishi
                 }
             }
-            return HttpResponse(json.dumps(data), content_type="application/json")
+            return Response(data)
         else:
-            return HttpResponse(json.dumps({"mess": "该类型未开发"}), content_type="application/json")
+            return Response({"mess": "该类型未开发"})
 
 
 class ListSetPagination(PageNumberPagination):
@@ -130,4 +139,38 @@ class PlateViewsSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class UserToVisitHistoryViewsSet(viewsets.ModelViewSet):
+    queryset = UserToVisitHistory.objects.all()
+    serializer_class = UserToVisitHistorySerializer
+    pagination_class = ListSetPagination  # 分页器
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
+    filter_class = UserToVisitHistoryFilter
+    search_fields = ['user__username', 'lishi__url']
+    ordering_fields = ['user', 'date_joined', 'update_time']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+
+class CollectionCountViewsSet(viewsets.ModelViewSet):
+    queryset = CollectionCount.objects.all()
+    serializer_class = CollectionCountSerializer
+    pagination_class = ListSetPagination  # 分页器
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
+    filter_class = CollectionCountFilter
+    search_fields = ['user__username', 'collection__name']
+    ordering_fields = ['user', 'date_joined', 'update_time']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user, collect=True)
 

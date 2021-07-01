@@ -42,3 +42,21 @@ class PlateFilter(django_filters.rest_framework.FilterSet):
     class Meta:
         model = Plate
         fields = ['user__username', 'name']
+
+
+class UserToVisitHistoryFilter(django_filters.rest_framework.FilterSet):
+    username = django_filters.CharFilter(field_name='user__username', label="用户名")  # 跨表操作
+    url = django_filters.CharFilter(field_name='lishi__url', label="url")  # 跨表操作
+
+    class Meta:
+        model = UserToVisitHistory
+        fields = ['username', 'url']
+
+
+class CollectionCountFilter(django_filters.rest_framework.FilterSet):
+    username = django_filters.CharFilter(field_name='user__username', label="用户名")  # 跨表操作
+    url = django_filters.CharFilter(field_name='collection__chapter__url', label="url")  # 跨表操作
+
+    class Meta:
+        model = CollectionCount
+        fields = ['username', 'url']

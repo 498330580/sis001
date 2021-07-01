@@ -41,6 +41,54 @@ class ClassificationAdmin(admin.ModelAdmin):
     list_per_page = 25  # 列表显示数据条数
 
 
+class PlateAdmin(admin.ModelAdmin):
+    list_display = ['user', 'name']
+
+    search_fields = ['name']
+
+    date_hierarchy = 'date_joined'
+
+    list_select_related = True  # 减少数据库查询开销
+    list_per_page = 25  # 列表显示数据条数
+
+
+class CollectionCountAdmin(admin.ModelAdmin):
+    list_display = ['user', 'collection', 'count', 'addbook', 'collect']
+
+    search_fields = ['user']
+
+    date_hierarchy = 'date_joined'
+
+    list_select_related = True  # 减少数据库查询开销
+    list_per_page = 25  # 列表显示数据条数
+
+
+class UserToVisitHistoryAdmin(admin.ModelAdmin):
+    list_display = ['user', 'lishi']
+
+    search_fields = ['user']
+
+    date_hierarchy = 'date_joined'
+
+    list_select_related = True  # 减少数据库查询开销
+    list_per_page = 25  # 列表显示数据条数
+
+
+class VisitHistoryAdmin(admin.ModelAdmin):
+    list_display = ['user', 'url']
+
+    search_fields = ['user', "url"]
+
+    date_hierarchy = 'date_joined'
+
+    list_select_related = True  # 减少数据库查询开销
+    list_per_page = 25  # 列表显示数据条数
+
+
 admin.site.register(Chapter, ChapterAdmin)
 admin.site.register(Collection, CollectionAdmin)
 admin.site.register(Classification, ClassificationAdmin)
+admin.site.register(Plate, PlateAdmin)
+admin.site.register(CollectionCount, CollectionCountAdmin)
+admin.site.register(UserToVisitHistory, UserToVisitHistoryAdmin)
+admin.site.register(VisitHistory, VisitHistoryAdmin)

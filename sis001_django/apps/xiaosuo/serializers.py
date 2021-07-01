@@ -38,3 +38,17 @@ class PlateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Plate
         fields = "__all__"
+
+
+class UserToVisitHistorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserToVisitHistory
+        fields = "__all__"
+
+
+class CollectionCountSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CollectionCount
+        fields = "__all__"

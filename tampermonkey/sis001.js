@@ -117,9 +117,9 @@
                     if (data["mess"]!= "错误，未传递URL") {
                         let xs = data["data"]["xiaosuo"]
                         let ls = data["data"]["lishi"]
-                        console.log(url_bankuai)
+                        // console.log(url_bankuai)
                         if (xiaosuo(url_bankuai)) {
-                            console.log("已识别")
+                            // console.log("已识别")
                             if (xs) {
                                 a.innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
                             } else {
@@ -234,6 +234,136 @@
         })
     }
 
+    // 浏览记录不存在的情况
+    function addurl(html, url) {
+        // 检查数据库中网址是否存在
+        GM_xmlhttpRequest({
+            url:host + "api/lishi?url=" + url,
+            method :"GET",
+            anonymous: true,
+            headers: {
+                "Content-type": "application/json",
+                "Authorization": "Token " + token
+            },
+            onload:function(xhr){
+                let data = JSON.parse(xhr.responseText)
+                if (data["count"]) {
+                    console.log("数据库中URL存在");
+                    // url存在
+                    
+                    // 由于加载本函数的API已检查过该用户是否浏览过该url，此处不再做检查
+                    console.log("用户未浏览过该url");
+                    // 关联数据库url与用户（添加url到用户浏览）
+                    GM_xmlhttpRequest({
+                        url:host + "api/user_url",
+                        method :"POST",
+                        data:JSON.stringify({"lishi": data["results"][0]["id"]}),
+                        dataType: "json",
+                        anonymous: true,
+                        headers: {
+                            "Content-type": "application/json",
+                            "Authorization": "Token " + token
+                        },
+                        onload:function(r){
+                            if (JSON.parse(r.responseText)["lishi"] == data["results"][0]["id"]) {
+                                console.log("插入用户url浏览记录成功");
+                                html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                            } else {
+                                html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
+                            }
+                        }
+                    });
+
+                    // 检查用户是否浏览过网址
+                    // GM_xmlhttpRequest({
+                    //     url:host + "api/user_url?url=" + url,
+                    //     method :"GET",
+                    //     anonymous: true,
+                    //     headers: {
+                    //         "Content-type": "application/json",
+                    //         "Authorization": "Token " + token
+                    //     },
+                    //     onload:function(xhr){
+                    //         if (JSON.parse(xhr.responseText)["count"] != 0) {
+                    //             console.log("用户已浏览过该url");
+                    //             html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                    //         } else {
+                    //             // 用户未浏览过url
+                    //             console.log("用户未浏览过该url");
+                    //             // 关联数据库url与用户（添加url到用户浏览）
+                    //             GM_xmlhttpRequest({
+                    //                 url:host + "api/user_url",
+                    //                 method :"POST",
+                    //                 data:JSON.stringify({"lishi": data["results"][0]["id"]}),
+                    //                 dataType: "json",
+                    //                 anonymous: true,
+                    //                 headers: {
+                    //                     "Content-type": "application/json",
+                    //                     "Authorization": "Token " + token
+                    //                 },
+                    //                 onload:function(r){
+                    //                     if (JSON.parse(r.responseText)["lishi"] == data["results"][0]["id"]) {
+                    //                         console.log("插入用户记录成功");
+                    //                         html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                    //                     } else {
+                    //                         html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
+                    //                     }
+                    //                 }
+                    //             });
+                    //         }
+                    //     }
+                    // })
+                } else {
+                    // url不存在
+                    // 创建url
+                    console.log("数据库中url不存在");
+                    GM_xmlhttpRequest({
+                        url:host + "api/lishi",
+                        method :"POST",
+                        data:JSON.stringify({"url": url}),
+                        dataType: "json",
+                        anonymous: true,
+                        headers: {
+                            "Content-type": "application/json",
+                            "Authorization": "Token " + token
+                        },
+                        onload:function(xhr){
+                            if (JSON.parse(xhr.responseText)["url"] == url) {
+                                console.log("数据库URL记录保存成功");
+                                // 关联数据库url与用户（添加url到用户浏览）
+                                GM_xmlhttpRequest({
+                                    url:host + "api/user_url",
+                                    method :"POST",
+                                    data:JSON.stringify({"lishi": JSON.parse(xhr.responseText)["id"]}),
+                                    dataType: "json",
+                                    anonymous: true,
+                                    headers: {
+                                        "Content-type": "application/json",
+                                        "Authorization": "Token " + token
+                                    },
+                                    onload:function(r){
+                                        if (JSON.parse(r.responseText)["lishi"] == JSON.parse(xhr.responseText)["id"]) {
+                                            console.log("插入用户记录成功");
+                                            html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                                        } else {
+                                            html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
+                                        }
+                                    }
+                                });
+                            } else {
+                                html.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
+                            }
+                        }
+                    });
+                }
+            }
+        })
+
+        
+    }
+
+    // 判断book是否已存在于数据库中
+
     // 详情页编辑
     function xiangqing() {
         let h1 = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0];
@@ -241,7 +371,8 @@
         let a = document.getElementById("nav").getElementsByTagName("a")
         let url_bankuai = a[a.length-1].href
         let bankuai = a[a.length-1].innerText
-        let introduction = document.getElementsByName("description")[0].content.replace(/ SiS001! Board  - \[第一会所 邀请注册\]/ig,"")
+        // introduction = document.getElementsByName("description")[0].content.replace(/ SiS001! Board  - \[第一会所 邀请注册\]/ig,"")
+        // console.log(introduction);
         
         bankuaisave(bankuai)
         biaoqiansave()
@@ -285,27 +416,28 @@
                         h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
                         console.log("浏览记录已存在");
                     } else {
-                        GM_xmlhttpRequest({
-                            url:host + "api/lishi",
-                            method :"POST",
-                            data:JSON.stringify({"url": url}),
-                            dataType: "json",
-                            anonymous: true,
-                            headers: {
-                                "Content-type": "application/json",
-                                "Authorization": "Token " + token
-                            },
-                            onload:function(xhr){
-                                // console.log(JSON.parse(xhr.responseText));
-                                // console.log(xhr.responseText);
-                                if (JSON.parse(xhr.responseText)["url"] == url) {
-                                    h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
-                                    console.log("浏览记录保存成功");
-                                } else {
-                                    h1.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
-                                }
-                            }
-                        });
+                        addurl(h1, url)
+                        // GM_xmlhttpRequest({
+                        //     url:host + "api/lishi",
+                        //     method :"POST",
+                        //     data:JSON.stringify({"url": url}),
+                        //     dataType: "json",
+                        //     anonymous: true,
+                        //     headers: {
+                        //         "Content-type": "application/json",
+                        //         "Authorization": "Token " + token
+                        //     },
+                        //     onload:function(xhr){
+                        //         // console.log(JSON.parse(xhr.responseText));
+                        //         // console.log(xhr.responseText);
+                        //         if (JSON.parse(xhr.responseText)["url"] == url) {
+                        //             h1.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
+                        //             console.log("浏览记录保存成功");
+                        //         } else {
+                        //             h1.innerHTML += '<i class="iconfont icon-weikan" style="color:#000000;font-size:75%;" title="未浏览"></i>';
+                        //         }
+                        //     }
+                        // });
                     }
                 } else {
                     console.log("错误，未传递URL");
@@ -390,7 +522,7 @@
     var title = "";     //小说章节标题
     var book = "";      //小说书籍标题
     var zuozhe = "";      //作者
-    var introduction = "";  //简介
+    // var introduction = "";  //简介
     // var book_id = 1;    //小说书籍储存ID
     var index_int = 0;  //小说章节索引
     var type_int = 0;   //小说章节类型
@@ -414,7 +546,6 @@
                 list();
             } else {
                 xiangqing();
-                // title = xiangqing();
             }
             
         }
@@ -432,9 +563,7 @@
             ],
             type: type_int,
             book_vue: book,
-            indexdata: index_int,
-            // bankuai_id = 0,  //版块ID
-            // biaoqian_id = 0,  //标签ID
+            indexdata: index_int
         }, methods: {
             // 保存按钮
             savexiapsuo(bq,bk){
@@ -447,9 +576,6 @@
                     book = this.book_vue;
                     index_int = this.indexdata;
                     type_int = this.type;
-                    // bankuai_id = bk;
-                    // biaoqian_id = bq;
-                    console.log(bankuai_id, biaoqian_id);
                     GM_xmlhttpRequest({
                         url: host+"api/book?name=" + book,
                         method :"GET",
@@ -463,7 +589,7 @@
                                 GM_xmlhttpRequest({
                                     url: host+"api/book",
                                     method :"POST",
-                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id ,"authur":zuozhe, "plate": bankuai_id, "introduction":introduction}),
+                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id ,"authur":zuozhe, "plate": bankuai_id}),
                                     dataType: "json",
                                     anonymous: true,
                                     headers: {
@@ -473,8 +599,7 @@
                                     onload:function(xhr){
                                         if (JSON.parse(xhr.responseText)['name']==book){
                                             console.log("Book",book, '储存成功');
-                                            // book_id = JSON.parse(xhr.responseText)['id']
-                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id, "introduction":introduction})
+                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
                                             
                                         } else {
                                             console.log("Book",book, '储存失败');
@@ -483,8 +608,7 @@
                                 })
                             } else {
                                 console.log("Book",book, "已存在");
-                                // book_id = JSON.parse(xhr.responseText)["results"][0]['id']
-                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id, "introduction":introduction})
+                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id})
                             }
                         }
                     });
