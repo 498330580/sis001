@@ -1,7 +1,7 @@
 {
     "name" : "sis001_web",
     "appid" : "__UNI__D5BD11E",
-    "description" : "",
+    "description" : "sis001辅助程序",
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
