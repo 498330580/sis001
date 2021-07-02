@@ -1,6 +1,7 @@
 import os
 import pickle
 import sys
+import re
 import time
 from random import randint
 
@@ -202,6 +203,7 @@ class Get_Xiaosuo:
         zhangjie = Chapter.objects.filter(crawling_status=False)
         print(f'当前数据库中共有{zhangjie.count()}条数据未爬取')
         index = 0
+        pattern = re.compile(r'^(版主.*?)作者：', re.S)
         for chapter in zhangjie:
             index += 1
             print(f"正在爬取第{index}条：", chapter)
@@ -209,6 +211,13 @@ class Get_Xiaosuo:
             t = ""
             for xiaosuo_str in data['data']:
                 t = t + xiaosuo_str
+
+            # 去除文章中的广告
+            guanggao = pattern.findall(t)
+            if guanggao:
+                for i in guanggao:
+                    t = t.replace(i, "")
+
             chapter.content = t
             chapter.crawling_status = True
             chapter.save()
@@ -216,13 +225,78 @@ class Get_Xiaosuo:
         self.sis001.sis001_exit()
 
 
+# 整理未取得作者的小说
+def get_authur():
+    chapters = Chapter.objects.filter(authur="无")
+    collections = Collection.objects.filter(authur="无")
+    if chapters or collections:
+        print("正在整理作者信息")
+        if chapters:
+            for chapter in chapters:
+                pattern = re.compile(r'作者：(.*?)\n')
+                zuozhe = re.search(pattern, chapter.content, flags=0)
+                if zuozhe:
+                    print(f"章节：{chapter.name}--作者信息缺失--添加作者{zuozhe.group(1)}")
+                    chapter.authur = zuozhe.group(1)
+                    chapter.save()
+
+        if collections:
+            for collection in collections:
+                zhangjie = Chapter.objects.filter(collection=collection).order_by("index")[0]
+                if zhangjie.authur != "无":
+                    print(f"书籍：{collection.name}--作者信息缺失--添加作者{zhangjie.authur}")
+                    collection.authur = zhangjie.authur
+                    collection.save()
+        print("作者信息整理完毕")
+
+
+# 整理文章信息
+def get_content():
+    print("正在整理文章信息")
+    for chapter in Chapter.objects.all():
+        content = chapter.content
+        pattern = re.compile(r'^(版主.*?)作者：', re.S)
+        guanggao = pattern.findall(content)
+        if guanggao:
+            print(f"章节：{chapter.name}--内容整理--去除版主广告")
+            for i in guanggao:
+                content = content.replace(i, "")
+            chapter.content = content
+            chapter.introduction = content[:150]
+            chapter.save()
+    print("整理文章信息完毕")
+
+
+# 添加文章简介
+def add_introduction():
+    zhangjie_introduction = Chapter.objects.filter(introduction="无")
+    book_introduction = Collection.objects.filter(introduction="无")
+    if zhangjie_introduction or book_introduction:
+        print("正在整理文章简介")
+        if zhangjie_introduction:
+            for zj in zhangjie_introduction:
+                zj.introduction = zj.content[:150]
+                zj.save()
+        if book_introduction:
+            for book in book_introduction:
+                book.introduction = Chapter.objects.filter(collection=book).order_by("index")[0].introduction
+                book.save()
+        print("整理文章简介完毕")
+
+
 def main():
     while True:
+        get_content()
+        add_introduction()
+        get_authur()
         if test_proxies(Proxy_server):
             mongo = Get_Xiaosuo()
             mongo.get_save()
         else:
             print("请打开代理")
+        get_content()
+        add_introduction()
+        get_authur()
         sec = 1
         print(f"等待{sec}分钟")
         time.sleep(sec * 60)

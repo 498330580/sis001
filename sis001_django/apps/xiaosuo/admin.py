@@ -9,7 +9,7 @@ admin.site.site_header = "sis001资源后台"
 
 
 class ChapterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'authur', 'collection', 'category', 'classification', 'plate', 'index', 'user', 'crawling_status']
+    list_display = ['name', 'authur', 'introduction', 'collection', 'category', 'classification', 'plate', 'index', 'user', 'crawling_status']
 
     search_fields = ['name', 'collection__name', 'authur', 'introduction', 'content', 'url']
 

@@ -75,6 +75,10 @@ class Collection(models.Model):
     def __str__(self):
         return self.name
 
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip().lstrip()
+        super().save(*args, **kwargs)
+
 
 # 章节
 class Chapter(models.Model):
@@ -102,6 +106,10 @@ class Chapter(models.Model):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        self.name = self.name.strip().lstrip()
+        super().save(*args, **kwargs)
 
 
 # sis001已访问的网页

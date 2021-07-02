@@ -33,7 +33,7 @@
 			// },
 			getbook(){
 				uni.request({
-					url:"http://127.0.0.1:8000/api/lishi",
+					url:"http://127.0.0.1:8000/api/book",
 					method: "GET",
 					header:{"Content-Type": "application/json", "Authorization": "Token 27171cc46f6bda2668ca755810635e577f600fa4"},
 					success:(res) => {
