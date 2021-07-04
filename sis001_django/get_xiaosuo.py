@@ -14,7 +14,7 @@ webdriver.ChromeOptions()
 
 # 设定工作目录为当前脚本目录
 jaoben_path = os.path.abspath(os.path.dirname(sys.argv[0]))  # 当前脚本目录
-# os.chdir(jaoben_path)  # 设定工作目录为脚本目录
+os.chdir(jaoben_path)  # 设定工作目录为脚本目录
 
 # 全局变量
 Chrome_path = os.path.join(jaoben_path, "chrome", "chrome.exe")  # 浏览器路径
