@@ -1,7 +1,14 @@
 <template>
 	<view>
 		<uni-list>
-		    <uni-list-item v-for="(item,index) in list" :key="index" :title="item.name" note="未看" link clickable to="/pages/book/book" @click="onClick($event,1)" />
+		    <uni-list-chat v-for="i in list" :key="i.id" :avatar-circle="true" :title="i.collection.name" avatar="/static/favicon.ico" clickable @click="todetail(i.collection.id)"></uni-list-chat>
+			 <!-- <uni-list-chat  v-for="i in list" :key="i.id" :avatar-circle="true" :title="i.collection.name" avatar="/static/favicon.ico" clickable :note="'作者:'+i.collection.authur" @click="todetail(i.collection.id)" badge-positon="left" :badge-text="i.count?'':'dot'">
+				<view class="chat-custom-right">
+					<text class="chat-custom-text"></text>
+					需要使用 uni-icons 请自行引入 
+					<uni-icons type="star-filled" color="#999" size="18"></uni-icons>
+				</view>
+			</uni-list-chat> -->
 		</uni-list>
 	</view>
 </template>
@@ -10,43 +17,56 @@
 	export default {
 		data() {
 			return {
-				title: 'Hello',
+				next: 'user_coll?yikan=false&collect=true',
 				list: []
 			}
 		},
 		onLoad() {
-			this.getbook()
+			this.getbook(this.next)
 		},
-		methods: {
-			// getbook(){
-			// 	uni.request({
-			// 		url:"http://127.0.0.1:5000/xiaosuo?type=list",
-			// 		method: "GET",
-			// 		header:{"Content-Type": "application/json"},
-			// 		success:(res) => {
-			// 			var d = res.data.data
-			// 			for (var i = 0; i < d.length; i++) {
-			// 				this.list.push(d[i])
-			// 			}
-			// 		}
-			// 	})
-			// },
-			getbook(){
-				uni.request({
-					url:"http://127.0.0.1:8000/api/book",
-					method: "GET",
-					header:{"Content-Type": "application/json", "Authorization": "Token 27171cc46f6bda2668ca755810635e577f600fa4"},
-					success:(res) => {
-						console.log(res.data)
-						// var d = res.data.data
-						// for (var i = 0; i < d.length; i++) {
-						// 	// this.list.push(d[i])
-						// 	console.log(d[i])
-						// }
-					}
+		onPullDownRefresh(){
+			this.next = "user_coll"
+			this.Refreshgetbook();
+			uni.stopPullDownRefresh();
+		},
+		onReachBottom(){
+			if (this.next){
+				this.getbook(this.next);
+			} else {
+				uni.showToast({
+					title:"没有数据了噢"
 				})
 			}
-
+		},
+		methods: {
+			getCollection(){
+				console.log("我在运行")
+			},
+			getbook(url){
+				uni.request({
+					url:url,
+					method: "GET",
+					success:(res) => {
+						// console.log(res.data["results"])
+						this.next = res.data["next"]
+						var d = res.data["results"]
+						for (var i = 0; i < d.length; i++) {
+							this.list.push(d[i])
+						}
+					}
+				})
+			},
+			Refreshgetbook(){
+				if (this.next == "user_coll"){
+					this.list = []
+					this.getbook("user_coll")
+				}
+			},
+			todetail(id){
+				uni.navigateTo({
+					url:"../details/details?id="+id  // addbooktype  1为加入书架，0为未加入书架
+				})
+			}
 		}
 	}
 </script>

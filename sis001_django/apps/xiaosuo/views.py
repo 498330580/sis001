@@ -2,9 +2,9 @@ from django.shortcuts import render
 
 # Create your views here.
 
+from .serializers import *
+from .filters import *
 from .models import *
-from .serializers import VisitHistorySerializer, CollectionSerializer, ChapterSerializer, ClassificationSerializer, PlateSerializer, UserToVisitHistorySerializer, CollectionCountSerializer
-from .filters import VisitHistoryFilter, CollectionFilter, ChapterFilter, ClassificationFilter, PlateFilter, UserToVisitHistoryFilter, CollectionCountFilter
 
 # from django.http import HttpResponse
 # from django.views.generic.base import View
@@ -15,6 +15,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 # from rest_framework.views import APIView
 from rest_framework.response import Response
+
+
 # from rest_framework import status
 
 
@@ -66,20 +68,22 @@ class ListSetPagination(PageNumberPagination):
 
 class VisitHistoryViewsSet(viewsets.ModelViewSet):
     queryset = VisitHistory.objects.all()
-    serializer_class = VisitHistorySerializer   # 控制显示字段
+    serializer_class = VisitHistorySerializer  # 控制显示字段
     pagination_class = ListSetPagination  # 分页器
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
-    filter_class = VisitHistoryFilter   # 控制可以筛选的字段
+    filter_class = VisitHistoryFilter  # 控制可以筛选的字段
     search_fields = ['user__username', 'url']
     ordering_fields = ['user', 'url', 'date_joined', 'update_time']
 
     # 超级管理员显示全部，其他显示自己的数据
     def get_queryset(self):
-        if self.request.user.is_superuser:
-            return self.queryset
-        else:
-            return self.queryset.filter(user=self.request.user)
+        if self.request is not None:
+            if self.request.user.is_superuser:
+                return self.queryset
+            else:
+                return self.queryset.filter(user=self.request.user)
+        return self.queryset.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -87,7 +91,7 @@ class VisitHistoryViewsSet(viewsets.ModelViewSet):
 
 class CollectionViewsSet(viewsets.ModelViewSet):
     queryset = Collection.objects.all()
-    serializer_class = CollectionSerializer
+    # serializer_class = CollectionSerializer
     pagination_class = ListSetPagination  # 分页器
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
@@ -97,6 +101,19 @@ class CollectionViewsSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.request is not None:
+            if self.request.method == "GET":
+                return CollectionGetSerializer
+        return CollectionSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.is_look_count += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class ChapterViewsSet(viewsets.ModelViewSet):
@@ -155,12 +172,14 @@ class UserToVisitHistoryViewsSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        if self.request is not None:
+            return self.queryset.filter(user=self.request.user)
+        return self.queryset.all()
 
 
 class CollectionCountViewsSet(viewsets.ModelViewSet):
     queryset = CollectionCount.objects.all()
-    serializer_class = CollectionCountSerializer
+    # serializer_class = CollectionCountSerializer
     pagination_class = ListSetPagination  # 分页器
     permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
@@ -172,5 +191,39 @@ class CollectionCountViewsSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user, collect=True)
+        # print(self.request.method == "GET")
+        if self.request is not None:
+            return self.queryset.filter(user=self.request.user, collect=True)
+        return self.queryset.all()
 
+    def get_serializer_class(self):
+        if self.request is not None:
+            if self.request.method == "GET":
+                return CollectionCountGetSerializer
+        return CollectionCountSerializer
+
+
+class ChapterCodeViewsSet(viewsets.ModelViewSet):
+    queryset = ChapterCode.objects.all()
+    serializer_class = ChapterCodeSerializer
+    pagination_class = ListSetPagination  # 分页器
+    permission_classes = [permissions.IsAuthenticated, permissions.DjangoModelPermissions]  # 权限
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
+    filter_class = ChapterCodeFilter
+    search_fields = ['user__username', 'chapter__name']
+    ordering_fields = ['user', 'chapter', 'date_joined', 'update_time']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        # print(self.request.method == "GET")
+        if self.request is not None:
+            return self.queryset.filter(user=self.request.user)
+        return self.queryset.all()
+
+    # def get_serializer_class(self):
+    #     if self.request is not None:
+    #         if self.request.method == "GET":
+    #             return CollectionCountGetSerializer
+    #     return CollectionCountSerializer

@@ -53,7 +53,7 @@ class PlateAdmin(admin.ModelAdmin):
 
 
 class CollectionCountAdmin(admin.ModelAdmin):
-    list_display = ['user', 'collection', 'count', 'addbook', 'collect']
+    list_display = ['user', 'collection', 'count', 'addbook', 'collect', 'yikan']
 
     search_fields = ['user']
 
@@ -85,6 +85,17 @@ class VisitHistoryAdmin(admin.ModelAdmin):
     list_per_page = 25  # 列表显示数据条数
 
 
+class ChapterCodeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'chapter', 'count', 'dow_code', 'look_code', 'end_code']
+
+    search_fields = ['user__name', "chapter__name"]
+
+    date_hierarchy = 'date_joined'
+
+    list_select_related = True  # 减少数据库查询开销
+    list_per_page = 25  # 列表显示数据条数
+
+
 admin.site.register(Chapter, ChapterAdmin)
 admin.site.register(Collection, CollectionAdmin)
 admin.site.register(Classification, ClassificationAdmin)
@@ -92,3 +103,4 @@ admin.site.register(Plate, PlateAdmin)
 admin.site.register(CollectionCount, CollectionCountAdmin)
 admin.site.register(UserToVisitHistory, UserToVisitHistoryAdmin)
 admin.site.register(VisitHistory, VisitHistoryAdmin)
+admin.site.register(ChapterCode, ChapterCodeAdmin)

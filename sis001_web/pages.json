@@ -16,7 +16,48 @@
             "path" : "pages/users/users",
             "style" :                                                                                    
             {
-                "navigationBarTitleText": "个人中心"
+                "navigationBarTitleText": "个人中心",
+				"navigationBarBackgroundColor":"#337eb4"
+            }
+            
+        }
+        ,{
+            "path" : "pages/details/details",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "书籍",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/login/login",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "登陆",
+                "enablePullDownRefresh": false,
+				"navigationStyle":"custom"
+            }
+            
+        },
+		{
+			"path":"pages/read/read",
+			"style":{
+				"navigationBarTitleText": "阅读",
+				"enablePullDownRefresh": false,
+				"navigationBarBackgroundColor":"#764e3b",
+				"transparentTitle":"always"
+				// "disableScroll":true  // 禁止滚动
+				// "navigationBarShadow":false,
+				// "backgroundColorTop": "#000000"
+			}
+		}
+        ,{
+            "path" : "pages/yikan/yikan",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "已看",
+                "enablePullDownRefresh": false
             }
             
         }
@@ -24,13 +65,14 @@
 	"globalStyle": {
 		"navigationBarTextStyle": "white",
 		// "navigationStyle":"custom",  //取消导航
+		"onReachBottomDistance":20,
 		"navigationBarTitleText": "sis001辅助",
 		"navigationBarBackgroundColor": "#d81e06",
 		"backgroundColor": "#ffffff",
-		"enablePullDownRefresh": true,
-		"navigationBarShadow": {
-			"colorType":"grey"
-		}
+		"enablePullDownRefresh": true
+		// "navigationBarShadow": {
+		// 	"colorType":"grey"
+		// }
 	},
 	"tabBar": {
 	    "color": "#7A7E83",
@@ -44,6 +86,12 @@
 	        "selectedIconPath": "static/index/书架%20(点击).png",
 	        "text": "书架"
 	    },
+		{
+		    "pagePath": "pages/yikan/yikan",
+		    "iconPath": "static/yikan/已看.png",
+		    "selectedIconPath": "static/yikan/已看.png",
+		    "text": "已看"
+		},
 		{
 	        "pagePath": "pages/book/book",
 	        "iconPath": "static/index/书架%20(未点击).png",

@@ -83,7 +83,7 @@ class Collection(models.Model):
 # 章节
 class Chapter(models.Model):
     user = models.ForeignKey(UserProfile, verbose_name="创建人", on_delete=models.SET_NULL, null=True, blank=True)
-    collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.SET_NULL, null=True, blank=True)
+    collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.CASCADE)
     name = models.CharField(verbose_name="名称", max_length=500)
     authur = models.CharField(verbose_name="作者", max_length=100, default="无")
     category = models.IntegerField(verbose_name="类别", choices=TYPE, default=0)
@@ -131,11 +131,12 @@ class VisitHistory(models.Model):
 
 # 用户与合集的状态
 class CollectionCount(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="用户", on_delete=models.CASCADE, null=True, blank=True)
-    collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="用户", on_delete=models.CASCADE, blank=True)
+    collection = models.ForeignKey(Collection, verbose_name="合集", on_delete=models.CASCADE)
     count = models.IntegerField(verbose_name="个人点击次数", default=0)
     addbook = models.BooleanField(verbose_name="是否加入书架", help_text="判断个人看书页面是否将书加入书架", default=False)
     collect = models.BooleanField(verbose_name="是否加入收藏", help_text="判断油猴插件界面是否保存", default=False)
+    yikan = models.BooleanField(verbose_name="是否已看", default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
@@ -151,8 +152,8 @@ class CollectionCount(models.Model):
 
 # 用户与网址记录的状态
 class UserToVisitHistory(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, null=True, blank=True)
-    lishi = models.ForeignKey(VisitHistory, verbose_name="访问网址ID", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, blank=True)
+    lishi = models.ForeignKey(VisitHistory, verbose_name="访问网址ID", on_delete=models.CASCADE)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')
@@ -168,11 +169,12 @@ class UserToVisitHistory(models.Model):
 
 # 用户章节的状态（对于自己的前端）
 class ChapterCode(models.Model):
-    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, null=True, blank=True)
-    chapter = models.ForeignKey(Chapter, verbose_name="章节", on_delete=models.CASCADE, null=True, blank=True)
+    user = models.ForeignKey(UserProfile, verbose_name="访问人", on_delete=models.CASCADE, blank=True)
+    chapter = models.ForeignKey(Chapter, verbose_name="章节", on_delete=models.CASCADE)
     count = models.IntegerField(verbose_name="个人点击次数", default=0)
     dow_code = models.BooleanField(verbose_name="下载状态", default=False, help_text="用于判断用户是否使用脚本下载过该章节")
     look_code = models.FloatField(verbose_name="章节观看进度", null=True, blank=True, default=None)
+    end_code = models.BooleanField(verbose_name="是否已观看完毕", default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
     update_time = models.DateTimeField(auto_now=True, verbose_name='修改时间')

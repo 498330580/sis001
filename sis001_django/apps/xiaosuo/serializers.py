@@ -19,6 +19,15 @@ class CollectionSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class CollectionGetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Collection
+        exclude = ["user"]
+        # fields = "__all__"
+        depth = 1
+
+
 class ChapterSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -47,8 +56,28 @@ class UserToVisitHistorySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class CollectionCountSerializer(serializers.ModelSerializer):
+class CollectionCountGetSerializer(serializers.ModelSerializer):
+    # collection = CollectionSerializer(many=True, read_only=True)
 
     class Meta:
         model = CollectionCount
+        exclude = ["user"]
+        # fields = "__all__"
+        depth = 1
+
+
+class CollectionCountSerializer(serializers.ModelSerializer):
+    # collection = CollectionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CollectionCount
+        # exclude = ["user"]
+        fields = "__all__"
+        # depth = 1
+
+
+class ChapterCodeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ChapterCode
         fields = "__all__"

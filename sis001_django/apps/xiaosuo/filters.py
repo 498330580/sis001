@@ -27,7 +27,7 @@ class ChapterFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = Chapter
-        fields = ['name', 'url', 'classification', 'plate', 'category', 'crawling_status']
+        fields = ['name', 'url', 'collection', 'classification', 'plate', 'category', 'crawling_status']
 
 
 class ClassificationFilter(django_filters.rest_framework.FilterSet):
@@ -59,4 +59,11 @@ class CollectionCountFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = CollectionCount
-        fields = ['username', 'url']
+        fields = ['username', 'url', 'yikan', 'addbook', 'collect', 'collection']
+
+
+class ChapterCodeFilter(django_filters.rest_framework.FilterSet):
+
+    class Meta:
+        model = ChapterCode
+        fields = ['user', 'chapter', 'end_code']
