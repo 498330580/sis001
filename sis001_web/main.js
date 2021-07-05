@@ -10,6 +10,9 @@ uni.addInterceptor('navigateTo', {
     invoke (args) {
 		let Token = uni.getStorageSync('Authorization')
 		if (!Token) {
+			uni.showToast({
+				title:"没有登录"
+			})
 			uni.reLaunch({
 				url:"../login/login"
 			})

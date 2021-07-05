@@ -14,7 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.static import serve
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework.documentation import include_docs_urls
@@ -39,10 +40,17 @@ from xiaosuo.views import PanDuan
 
 urlpatterns = [
     path('admin', admin.site.urls),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
     # path('api-token-auth/', views.obtain_auth_token),
     path('panduan', PanDuan.as_view(), name="panduan"),
     path(r'doc/', include_docs_urls(title='API_DOC')),     # api测试接口
     path('api-auth/', include('rest_framework.urls')),
     path(r'login', Login.as_view()),  # drf自带token登录验证
     path('', include(router.urls)),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# handler404 = "accounts.views.page_not_found"
+# handler500 = "accounts.views.error"

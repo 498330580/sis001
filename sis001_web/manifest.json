@@ -1,5 +1,5 @@
 {
-    "name" : "sis001_web",
+    "name" : "sis001",
     "appid" : "__UNI__D5BD11E",
     "description" : "sis001辅助程序",
     "versionName" : "1.0.0",
@@ -43,7 +43,9 @@
             /* ios打包配置 */
             "ios" : {},
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {
+                "ad" : {}
+            }
         }
     },
     /* 快应用特有相关 */
@@ -69,6 +71,7 @@
         "enable" : false
     },
     "h5" : {
-        "title" : "sis001"
+        "title" : "sis001",
+        "domain" : "10.0.0.8"
     }
 }
