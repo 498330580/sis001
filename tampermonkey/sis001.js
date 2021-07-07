@@ -5,7 +5,7 @@
 
     // import Vue from 'vue'
 
-    var host = "http://127.0.0.1:8000/"     // 这里填写你后端的地址
+    var host = "http://10.0.0.8:8000/"     // 这里填写你后端的地址
     var token = "27171cc46f6bda2668ca755810635e577f600fa4"      // 这里填写你后端的token
 
     // function dj(url) {
