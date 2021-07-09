@@ -456,24 +456,27 @@
             book = ""
         }
 
-        if (/【作者：(.*?)】/ig.exec(title)) {
-            zuozhe = /【作者：(.*?)】/ig.exec(title)[1]
-            console.log(zuozhe);
-        } else {
-            zuozhe = "无"
-        }
-        // if (/【作者：(.*?)】|作者：(.*)/ig.exec(title)) {
-        //     zuozhe = /【作者：(.*?)】|作者：(.*)/ig.exec(title)[1]
+        // if (/【作者：(.*?)】/ig.exec(title)) {
+        //     zuozhe = /【作者：(.*?)】/ig.exec(title)[1]
         //     console.log(zuozhe);
         // } else {
         //     zuozhe = "无"
         // }
+        if (/作者：(.*?)$/ig.exec(title)) {
+            zuozhe = /作者：(.*?)$/ig.exec(title)[1]
+            zuozhe = zuozhe.replace("】","")
+        } else {
+            zuozhe = "无"
+        }
 
         if (/（(\d+.*?)(-|）)/ig.exec(title)) {
             index_int = parseInt(/（(\d+.*?)(-|）)/ig.exec(title)[1])
         } else {
             index_int = 1
         }
+
+        title = title.replace(/\[.*?\]/ig, "")
+        title = title.replace(/【作者：.*?】|作者：.*?$/ig, "")
     }
 
     // 创建章节与账号的关联

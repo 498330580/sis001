@@ -237,8 +237,19 @@ def get_authur():
             for chapter in chapters:
                 pattern = re.compile(r'作者：(.*?)\n')
                 zuozhe = re.search(pattern, chapter.content, flags=0)
+                if not zuozhe:
+                    """如果文章中未获取到作者信息，就从文章标题中获取"""
+                    pattern = re.compile(r'作者：(.*?)$')
+                    zuozhe = re.search(pattern, chapter.name, flags=0)
+                    # if zuozhe:
+                    #     zuozhe = zuozhe.group(1).replace("】", "")
                 if zuozhe:
-                    print(f"章节：{chapter.name}--作者信息缺失--添加作者{zuozhe.group(1)}")
+                    print(f"章节：{chapter.name}--作者信息缺失--添加作者{zuozhe.group(1).replace('】', '')}")
+
+                    name = re.sub("\[.*?\]", "", chapter.name)
+                    name = re.sub("【作者：.*?】|作者：.*?$", "", name)
+                    chapter.name = name
+
                     chapter.authur = zuozhe.group(1)
                     chapter.save()
 
@@ -286,9 +297,15 @@ def add_introduction():
         print("整理文章简介完毕")
 
 
-# # 整理用户与章节的关联
-# def user_zj():
-#     pass
+# 删除章节中的标签与作者信息
+def del_bq_zz():
+    for chapter in Chapter.objects.all():
+        print(chapter.name)
+        name = re.sub("\[.*?\]", "", chapter.name)
+        name = re.sub("【作者：.*?】|作者：.*?$", "", name)
+        print(name)
+        chapter.name = name
+        chapter.save()
 
 
 def main():
@@ -308,3 +325,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # del_bq_zz()
