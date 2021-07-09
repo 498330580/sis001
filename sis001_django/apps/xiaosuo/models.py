@@ -173,7 +173,7 @@ class ChapterCode(models.Model):
     chapter = models.ForeignKey(Chapter, verbose_name="章节", on_delete=models.CASCADE)
     count = models.IntegerField(verbose_name="个人点击次数", default=0)
     dow_code = models.BooleanField(verbose_name="下载状态", default=False, help_text="用于判断用户是否使用脚本下载过该章节")
-    look_code = models.FloatField(verbose_name="章节观看进度", null=True, blank=True, default=None)
+    look_code = models.FloatField(verbose_name="章节观看进度", null=True, blank=True, default=0)
     end_code = models.BooleanField(verbose_name="是否已观看完毕", default=False)
 
     date_joined = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")

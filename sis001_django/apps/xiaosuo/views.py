@@ -124,7 +124,7 @@ class ChapterViewsSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  # 过滤器（过滤、搜索、排序）
     filter_class = ChapterFilter
     search_fields = ['user__username', 'name', 'authur', 'introduction', 'content']
-    ordering_fields = ['user', 'name', 'category', 'classification', 'plate', 'date_joined', 'update_time']
+    ordering_fields = ['user', 'name', 'index', 'category', 'classification', 'plate', 'date_joined', 'update_time']
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

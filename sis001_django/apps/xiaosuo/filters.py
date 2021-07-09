@@ -63,7 +63,8 @@ class CollectionCountFilter(django_filters.rest_framework.FilterSet):
 
 
 class ChapterCodeFilter(django_filters.rest_framework.FilterSet):
+    collection = django_filters.CharFilter(field_name='chapter__collection_id', label="书籍")  # 跨表操作
 
     class Meta:
         model = ChapterCode
-        fields = ['user', 'chapter', 'end_code']
+        fields = ['user', 'chapter', 'end_code', 'collection']

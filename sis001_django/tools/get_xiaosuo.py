@@ -4,6 +4,7 @@ import sys
 import re
 import time
 from random import randint
+import requests as req
 
 # import pymongo
 import requests
@@ -25,19 +26,24 @@ Proxy_server = "http://127.0.0.1:10809"  # 代理
 User_Password = ["498330580", "19920124zhy@."]
 Max_sleep = 5  # 爬取最大等待时间
 Login_yanzheng_url = "http://www.sis001.com//forum/forum-184-1.html"  # 登陆验证地址
+Token_data = "Token 27171cc46f6bda2668ca755810635e577f600fa4"
+Api_host = "http://sis001.yaoling.ltd/"
+headers = {"Content-type": "application/json",
+           "Authorization": Token_data
+           }
 
 
-# 引入django环境
-pwd = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(pwd + "../")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sis001_django.settings")
+# # 引入django环境
+# pwd = os.path.dirname(os.path.realpath(__file__))
+# sys.path.append(pwd + "../")
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sis001_django.settings")
 
-import django
-django.setup()
+# import django
+# django.setup()
 
-from xiaosuo.models import *
-from users.models import UserProfile
-user = UserProfile.objects.get(username="498330580")
+# from xiaosuo.models import *
+# from users.models import UserProfile
+# user = UserProfile.objects.get(username="498330580")
 
 
 # 等待时间
@@ -181,9 +187,7 @@ def test_proxies(proxies):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) "
                       "Chrome/67.0.3396.99 Safari/537.36"}
     try:
-        # response = requests.get(Login_yanzheng_url, headers=header, proxies={"http": proxies}, timeout=5)
-        response = requests.get("http://www.sis001.com/", headers=header, proxies={"http": proxies}, timeout=30, verify=False)
-        
+        response = requests.get(Login_yanzheng_url, headers=header, proxies={"http": proxies}, timeout=5)
         if response.status_code == 200:
             # print("该代理IP可用：",proxies)
             return True
@@ -205,7 +209,7 @@ class Get_Xiaosuo:
         zhangjie = Chapter.objects.filter(crawling_status=False)
         print(f'当前数据库中共有{zhangjie.count()}条数据未爬取')
         index = 0
-        pattern = re.compile(r'(版主[\s\S]*)作者：', re.S)
+        pattern = re.compile(r'^(版主.*?)作者：', re.S)
         for chapter in zhangjie:
             index += 1
             print(f"正在爬取第{index}条：", chapter)
@@ -229,7 +233,7 @@ class Get_Xiaosuo:
 
 # 整理未取得作者的小说
 def get_authur():
-    chapters = Chapter.objects.filter(authur="无").exclude(content=None)
+    chapters = Chapter.objects.filter(authur="无")
     collections = Collection.objects.filter(authur="无")
     if chapters or collections:
         print("正在整理作者信息")
@@ -255,23 +259,27 @@ def get_authur():
 # 整理文章信息
 def get_content():
     print("正在整理文章信息")
-    for chapter in Chapter.objects.exclude(content=None):
-        content = chapter.content
-        pattern = re.compile(r'(版主[\s\S]*)作者：', re.S)
-        guanggao = pattern.findall(content)
-        if guanggao:
-            print(f"章节：{chapter.name}--内容整理--去除版主广告")
-            for i in guanggao:
-                content = content.replace(i, "")
-            chapter.content = content
-            chapter.introduction = content[:150]
-            chapter.save()
+
+    for zj in req.get(url=Api_host+"zhangjie", headers=headers).json()["results"]:
+        print(zj)
+
+    # for chapter in Chapter.objects.all():
+    #     content = chapter.content
+    #     pattern = re.compile(r'^(版主.*?)作者：', re.S)
+    #     guanggao = pattern.findall(content)
+    #     if guanggao:
+    #         print(f"章节：{chapter.name}--内容整理--去除版主广告")
+    #         for i in guanggao:
+    #             content = content.replace(i, "")
+    #         chapter.content = content
+    #         chapter.introduction = content[:150]
+    #         chapter.save()
     print("整理文章信息完毕")
 
 
 # 添加文章简介
 def add_introduction():
-    zhangjie_introduction = Chapter.objects.filter(introduction="无").exclude(content=None)
+    zhangjie_introduction = Chapter.objects.filter(introduction="无")
     book_introduction = Collection.objects.filter(introduction="无")
     if zhangjie_introduction or book_introduction:
         print("正在整理文章简介")
@@ -284,11 +292,6 @@ def add_introduction():
                 book.introduction = Chapter.objects.filter(collection=book).order_by("index")[0].introduction
                 book.save()
         print("整理文章简介完毕")
-
-
-# # 整理用户与章节的关联
-# def user_zj():
-#     pass
 
 
 def main():
@@ -307,4 +310,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    headers = {"Content-type": "application/json",
+               "Authorization": Token_data
+               }
+    r = req.get(url=Api_host + "panduan?type=xiaosuo&url=http://www.sis001.com/forum/thread-11045018-1-1.html",
+                headers=headers).json()
+    print(r)
