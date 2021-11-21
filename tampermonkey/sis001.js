@@ -5,7 +5,7 @@
 
     // import Vue from 'vue'
 
-    var host = "http://127.0.0.1:8000/"     // 这里填写你后端的地址
+    var host = "http://sis001.yaoling.ltd:8000/"     // 这里填写你后端的地址
     var token = "27171cc46f6bda2668ca755810635e577f600fa4"      // 这里填写你后端的token
 
     // function dj(url) {
@@ -44,16 +44,16 @@
                                 let a_data = spans[index].getElementsByTagName("a")[0]
                                 let get_url = a_data.href
                                 GM_xmlhttpRequest({
-                                    url:host + "panduan?type=xiaosuo&url=" + get_url,
+                                    url: host + "panduan?type=xiaosuo&url=" + get_url,
                                     method: "GET",
                                     anonymous: true,
                                     headers: {
                                         "Content-type": "application/json",
                                         "Authorization": "Token " + token
                                     },
-                                    onload:function(xhr){
+                                    onload: function (xhr) {
                                         let data = JSON.parse(xhr.responseText)
-                                        if (data["mess"]!= "错误，未传递URL") {
+                                        if (data["mess"] != "错误，未传递URL") {
                                             let xs = data["data"]["xiaosuo"]
                                             let ls = data["data"]["lishi"]
                                             let url = window.location.href;
@@ -80,12 +80,12 @@
                                 // button.setAttribute("onclick", "tanchuang(" + url + ")");
                                 // button.appendChild(document.createTextNode("加入合集"));
                                 // spans[index].appendChild(button);
-    
+
                             }
                         }
                     }
                 }
-                
+
             }
         }
     }
@@ -105,16 +105,16 @@
             let url = a.href
             let url_bankuai = tbody.getElementsByClassName("forum")[0].getElementsByTagName("a")[0].href
             GM_xmlhttpRequest({
-                url:host + "panduan?type=xiaosuo&url=" + url,
+                url: host + "panduan?type=xiaosuo&url=" + url,
                 method: "GET",
                 anonymous: true,
                 headers: {
                     "Content-type": "application/json",
                     "Authorization": "Token " + token
                 },
-                onload:function(xhr){
+                onload: function (xhr) {
                     let data = JSON.parse(xhr.responseText)
-                    if (data["mess"]!= "错误，未传递URL") {
+                    if (data["mess"] != "错误，未传递URL") {
                         let xs = data["data"]["xiaosuo"]
                         let ls = data["data"]["lishi"]
                         // console.log(url_bankuai)
@@ -142,7 +142,7 @@
     // 标签保存（返回标签ID）
     function biaoqiansave(bankuai) {
         let biaoqian = ""
-        if (bankuai == "重口另类区" || bankuai == "旧文展览馆") {
+        if (bankuai == "重口另类区" || bankuai == "旧文展览馆" || bankuai == "长篇收藏区") {
             biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText
             if (/\[(.*?)\]/ig.exec(biaoqian)) {
                 biaoqian = /\[(.*?)\] /ig.exec(biaoqian)[1]
@@ -150,32 +150,39 @@
                 biaoqian = "无"
             }
         } else {
+            // console.log("我在执行", document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a").length)
             biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a")[0].innerText
+            // if (document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a").length == 0) {
+            //     biaoqian = "未分类"
+            //     // console.log("我在执行")
+            // } else {
+            //     biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a")[0].innerText
+            // }
         }
         // let biaoqian = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].getElementsByTagName("a")[0].innerText
         biaoqian = biaoqian.replace('[', '')
         biaoqian = biaoqian.replace(']', '')
         GM_xmlhttpRequest({
             url: host + "fenlei?name=" + biaoqian,
-            method :"GET",
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["count"] == 0){
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["count"] == 0) {
                     GM_xmlhttpRequest({
                         url: host + "fenlei",
-                        method :"POST",
-                        data:JSON.stringify({"name": biaoqian}),
+                        method: "POST",
+                        data: JSON.stringify({ "name": biaoqian }),
                         dataType: "json",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(xhr){
+                        onload: function (xhr) {
                             if (JSON.parse(xhr.responseText)["name"] == biaoqian) {
                                 console.log("标签", biaoqian, "保存成功");
                                 biaoqian_id = JSON.parse(xhr.responseText)["id"]
@@ -204,26 +211,26 @@
         // bankuai = bankuai.replace('[', '')
         // bankuai = biaoqian.replace(']', '')
         GM_xmlhttpRequest({
-            url: host + "bankuai?name=" + bankuai,
-            method :"GET",
+            url: host + "bankuai?search=" + bankuai,
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["count"] == 0){
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["count"] == 0) {
                     GM_xmlhttpRequest({
                         url: host + "bankuai",
-                        method :"POST",
-                        data:JSON.stringify({"name": bankuai}),
+                        method: "POST",
+                        data: JSON.stringify({ "name": bankuai }),
                         dataType: "json",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(xhr){
+                        onload: function (xhr) {
                             if (JSON.parse(xhr.responseText)["name"] == bankuai) {
                                 console.log("版块", bankuai, "保存成功");
                                 bankuai_id = JSON.parse(xhr.responseText)["id"]
@@ -249,33 +256,33 @@
     function addurl(html, url) {
         // 检查数据库中网址是否存在
         GM_xmlhttpRequest({
-            url:host + "lishi?url=" + url,
-            method :"GET",
+            url: host + "lishi?url=" + url,
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
+            onload: function (xhr) {
                 let data = JSON.parse(xhr.responseText)
                 if (data["count"]) {
                     console.log("数据库中URL存在");
                     // url存在
-                    
+
                     // 由于加载本函数的API已检查过该用户是否浏览过该url，此处不再做检查
                     console.log("用户未浏览过该url");
                     // 关联数据库url与用户（添加url到用户浏览）
                     GM_xmlhttpRequest({
-                        url:host + "user_url",
-                        method :"POST",
-                        data:JSON.stringify({"lishi": data["results"][0]["id"]}),
+                        url: host + "user_url",
+                        method: "POST",
+                        data: JSON.stringify({ "lishi": data["results"][0]["id"] }),
                         dataType: "json",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(r){
+                        onload: function (r) {
                             if (JSON.parse(r.responseText)["lishi"] == data["results"][0]["id"]) {
                                 console.log("插入用户url浏览记录成功");
                                 html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
@@ -289,30 +296,30 @@
                     // 创建url
                     console.log("数据库中url不存在");
                     GM_xmlhttpRequest({
-                        url:host + "lishi",
-                        method :"POST",
-                        data:JSON.stringify({"url": url}),
+                        url: host + "lishi",
+                        method: "POST",
+                        data: JSON.stringify({ "url": url }),
                         dataType: "json",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(xhr){
+                        onload: function (xhr) {
                             if (JSON.parse(xhr.responseText)["url"] == url) {
                                 console.log("数据库URL记录保存成功");
                                 // 关联数据库url与用户（添加url到用户浏览）
                                 GM_xmlhttpRequest({
-                                    url:host + "user_url",
-                                    method :"POST",
-                                    data:JSON.stringify({"lishi": JSON.parse(xhr.responseText)["id"]}),
+                                    url: host + "user_url",
+                                    method: "POST",
+                                    data: JSON.stringify({ "lishi": JSON.parse(xhr.responseText)["id"] }),
                                     dataType: "json",
                                     anonymous: true,
                                     headers: {
                                         "Content-type": "application/json",
                                         "Authorization": "Token " + token
                                     },
-                                    onload:function(r){
+                                    onload: function (r) {
                                         if (JSON.parse(r.responseText)["lishi"] == JSON.parse(xhr.responseText)["id"]) {
                                             console.log("插入用户url记录成功");
                                             html.innerHTML += '<i class="iconfont icon-yikan" style="color:#43CD80;font-size:75%;" title="已浏览"></i>';
@@ -330,7 +337,7 @@
             }
         })
 
-        
+
     }
 
     // 获取当前详情页的章节对应书籍，并将书籍加入用户收藏
@@ -342,18 +349,20 @@
     function addbook(url) {
         //检查数据库中该章节记录是否存在
         GM_xmlhttpRequest({
-            url:host +"zhangjie?url=" + url,
-            method :"GET",
+            url: host + "zhangjie?url=" + url,
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["count"] == 0){
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["count"] == 0) {
                     // 数据库中该章节记录不存在
-                    console.log("数据库中不存在章节记录");
-                    document.getElementById("book").remove();
+                    console.log("数据库中不存在章节记录", url);
+                    if (document.getElementById("book")) {
+                        document.getElementById("book").remove();
+                    }
                 } else {
                     // 数据库中该章节记录存在
                     console.log("数据库中已存在章节记录");
@@ -370,11 +379,11 @@
         let h1 = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0];
         let url = window.location.href;
         let a = document.getElementById("nav").getElementsByTagName("a")
-        let url_bankuai = a[a.length-1].href
-        let bankuai = a[a.length-1].innerText
+        let url_bankuai = a[a.length - 1].href
+        let bankuai = a[a.length - 1].innerText
         // introduction = document.getElementsByName("description")[0].content.replace(/ SiS001! Board  - \[第一会所 邀请注册\]/ig,"")
         // console.log(introduction);
-        
+
         bankuaisave(bankuai)
         biaoqiansave(bankuai)
 
@@ -398,14 +407,14 @@
 
         // 浏览状态判断与书籍状态
         GM_xmlhttpRequest({
-            url:host + "panduan?type=xiaosuo&url=" + url,
+            url: host + "panduan?type=xiaosuo&url=" + url,
             method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
+            onload: function (xhr) {
                 let data = JSON.parse(xhr.responseText)
                 if (data["mess"] != "错误，未传递URL") {
                     let xs = data["data"]["xiaosuo"]
@@ -441,13 +450,13 @@
 
         // console.log(document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText);
         // return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].childNodes[1].nodeValue.trim()    //获取标题，不包含标签
-        if (bankuai == "重口另类区" || bankuai == "旧文展览馆") {
+        if (bankuai == "重口另类区" || bankuai == "旧文展览馆" || bankuai == "长篇收藏区") {
             title = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerText
         } else {
             title = document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].childNodes[1].nodeValue.trim()    //获取标题，不包含标签
         }
         // return document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0]
-        if (/【(.*?)】/ig.exec(title)){
+        if (/【(.*?)】/ig.exec(title)) {
             book = /【(.*?)】/ig.exec(title)[1];
             // console.log(book);
             // // console.log(document.getElementById("book1"))
@@ -464,7 +473,7 @@
         // }
         if (/作者：(.*?)$/ig.exec(title)) {
             zuozhe = /作者：(.*?)$/ig.exec(title)[1]
-            zuozhe = zuozhe.replace("】","")
+            zuozhe = zuozhe.replace("】", "")
         } else {
             zuozhe = "无"
         }
@@ -483,16 +492,16 @@
     function user_zj(id) {
         GM_xmlhttpRequest({
             url: host + "user_zj",
-            method :"POST",
-            data:JSON.stringify({"chapter": id}),
+            method: "POST",
+            data: JSON.stringify({ "chapter": id }),
             dataType: "json",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["chapter"] == id){
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["chapter"] == id) {
                     console.log("关联用户与章节成功");
                 } else {
                     console.log("关联用户与章节失败");
@@ -506,27 +515,27 @@
         // 书籍加入用户收藏
         GM_xmlhttpRequest({
             url: host + "user_coll?collect=true&collection=" + b_id,
-            method:"GET",
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["count"] == 0){
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["count"] == 0) {
 
                     GM_xmlhttpRequest({
-                        url: host+"user_coll",
-                        method :"POST",
-                        data:JSON.stringify({"collection": b_id, "collect": true}),
+                        url: host + "user_coll",
+                        method: "POST",
+                        data: JSON.stringify({ "collection": b_id, "collect": true }),
                         dataType: "json",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(xhr){
-                            if (JSON.parse(xhr.responseText)['collection']==b_id){
+                        onload: function (xhr) {
+                            if (JSON.parse(xhr.responseText)['collection'] == b_id) {
                                 console.log("书籍", book, "加入收藏成功");
                             } else {
                                 console.log("书籍", book, "加入收藏失败");
@@ -537,44 +546,44 @@
                 }
             }
         })
-        
+
 
         // 章节储存
         GM_xmlhttpRequest({
-            url:host +"zhangjie?url=" + url,
-            method :"GET",
+            url: host + "zhangjie?url=" + url,
+            method: "GET",
             anonymous: true,
             headers: {
                 "Content-type": "application/json",
                 "Authorization": "Token " + token
             },
-            onload:function(xhr){
-                if (JSON.parse(xhr.responseText)["count"] == 0){
-                GM_xmlhttpRequest({
-                    url:host+"zhangjie",
-                    method :"POST",
-                    // data:JSON.stringify({"name": title.innerText, "index": this.indexdata, "url": url, "collection": book_id}),
-                    data:JSON.stringify(data),
-                    dataType: "json",
-                    anonymous: true,
-                    headers: {
-                        "Content-type": "application/json",
-                        "Authorization": "Token " + token
-                    },
-                    onload:function(xhr){
-                        if (JSON.parse(xhr.responseText)['url']==data["url"]){
-                            console.log("章节：", data["name"], "保存成功");
-                            user_zj(JSON.parse(xhr.responseText)["id"])
-                            alert("保存成功！");
-                            document.getElementById("save").remove();
-                            document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
-                            document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
-                        } else {
-                            console.log("章节：", data["name"], "保存失败");
-                            alert("保存失败！");
+            onload: function (xhr) {
+                if (JSON.parse(xhr.responseText)["count"] == 0) {
+                    GM_xmlhttpRequest({
+                        url: host + "zhangjie",
+                        method: "POST",
+                        // data:JSON.stringify({"name": title.innerText, "index": this.indexdata, "url": url, "collection": book_id}),
+                        data: JSON.stringify(data),
+                        dataType: "json",
+                        anonymous: true,
+                        headers: {
+                            "Content-type": "application/json",
+                            "Authorization": "Token " + token
+                        },
+                        onload: function (xhr) {
+                            if (JSON.parse(xhr.responseText)['url'] == data["url"]) {
+                                console.log("章节：", data["name"], "保存成功");
+                                user_zj(JSON.parse(xhr.responseText)["id"])
+                                alert("保存成功！");
+                                document.getElementById("save").remove();
+                                document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
+                                document.getElementsByName("modactions")[0].getElementsByTagName("h1")[0].innerHTML += '<i class="iconfont icon-yikanwan" style="color:#43CD80;font-size:75%;" title="已保存"></i>';
+                            } else {
+                                console.log("章节：", data["name"], "保存失败");
+                                alert("保存失败！");
+                            }
                         }
-                    }
-                })
+                    })
                 } else {
                     console.log("章节已存在");
                 }
@@ -582,7 +591,7 @@
         })
     }
 
-    
+
 
     console.log("sis001脚本运行")
     var url = window.location.href;
@@ -613,7 +622,7 @@
             let list_zz = /^http.*?forum\/forum.*?html/ig
             let thread_zz = /^http.*?thread.*/ig
 
-            if (list_zz.test(url)){
+            if (list_zz.test(url)) {
                 console.log("列表页");
                 list();
             }
@@ -627,13 +636,13 @@
 
     /*Vue操作*/
     var vm = new Vue({
-    // window.$vm = new Vue({
+        // window.$vm = new Vue({
         el: "#save",
         data: {
             typelist: [
-                {id: 0, name: "无"},
-                {id: 1, name: "小说"},
-                {id: 2, name: "图片"},
+                { id: 0, name: "无" },
+                { id: 1, name: "小说" },
+                { id: 2, name: "图片" },
             ],
             type: type_int,
             book_vue: book,
@@ -641,10 +650,10 @@
             // zj: false
         }, methods: {
             // 保存按钮
-            savexiapsuo(){
+            savexiapsuo() {
                 if (!this.type) {
                     alert("类型不能为空");
-                } else if (!this.book_vue){
+                } else if (!this.book_vue) {
                     alert("书籍不能为空");
                 } else {
                     // 书籍保存
@@ -652,59 +661,59 @@
                     index_int = this.indexdata;
                     type_int = this.type;
                     GM_xmlhttpRequest({
-                        url: host+"book?name=" + book,
-                        method :"GET",
+                        url: host + "book?name=" + book,
+                        method: "GET",
                         anonymous: true,
                         headers: {
                             "Content-type": "application/json",
                             "Authorization": "Token " + token
                         },
-                        onload:function(xhr){
-                            if (JSON.parse(xhr.responseText)["count"] == 0){
+                        onload: function (xhr) {
+                            if (JSON.parse(xhr.responseText)["count"] == 0) {
                                 GM_xmlhttpRequest({
-                                    url: host+"book",
-                                    method :"POST",
-                                    data:JSON.stringify({"name": book, "category": type_int, "classification": biaoqian_id ,"authur":zuozhe, "plate": bankuai_id}),
+                                    url: host + "book",
+                                    method: "POST",
+                                    data: JSON.stringify({ "name": book, "category": type_int, "classification": biaoqian_id, "authur": zuozhe, "plate": bankuai_id }),
                                     dataType: "json",
                                     anonymous: true,
                                     headers: {
                                         "Content-type": "application/json",
                                         "Authorization": "Token " + token
                                     },
-                                    onload:function(xhr){
-                                        if (JSON.parse(xhr.responseText)['name']==book){
-                                            console.log("Book",book, '储存成功');
+                                    onload: function (xhr) {
+                                        if (JSON.parse(xhr.responseText)['name'] == book) {
+                                            console.log("Book", book, '储存成功');
                                             book_id = JSON.parse(xhr.responseText)["id"]
-                                            zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}, book_id)
-                                            
+                                            zhangjiesave({ "name": title, "authur": zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['id'], "category": type_int, "classification": biaoqian_id, "plate": bankuai_id }, book_id)
+
                                         } else {
-                                            console.log("Book",book, '储存失败');
+                                            console.log("Book", book, '储存失败');
                                         }
                                     }
                                 })
                             } else {
-                                console.log("Book",book, "已存在");
+                                console.log("Book", book, "已存在");
                                 book_id = JSON.parse(xhr.responseText)["results"][0]["id"]
-                                zhangjiesave({"name": title, "authur":zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id , "plate": bankuai_id}, book_id)
+                                zhangjiesave({ "name": title, "authur": zuozhe, "index": index_int, "url": url, "collection": JSON.parse(xhr.responseText)['results'][0]["id"], "category": type_int, "classification": biaoqian_id, "plate": bankuai_id }, book_id)
                             }
                         }
                     });
                 }
             },
             // 收藏按钮
-            shouchang(){
+            shouchang() {
                 GM_xmlhttpRequest({
-                    url: host+"user_coll",
-                    method :"POST",
-                    data:JSON.stringify({"collection": book_id, "collect": true}),
+                    url: host + "user_coll",
+                    method: "POST",
+                    data: JSON.stringify({ "collection": book_id, "collect": true }),
                     dataType: "json",
                     anonymous: true,
                     headers: {
                         "Content-type": "application/json",
                         "Authorization": "Token " + token
                     },
-                    onload:function(xhr){
-                        if (JSON.parse(xhr.responseText)['collection']==book_id){
+                    onload: function (xhr) {
+                        if (JSON.parse(xhr.responseText)['collection'] == book_id) {
                             console.log("书籍", book, "加入收藏成功");
                             document.getElementById("save").remove();
                             document.getElementsByClassName("iconfont icon-bianzu24")[0].remove()
@@ -716,6 +725,6 @@
                 })
             }
         }
-    });    
-    
+    });
+
 })();

@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib import messages
+from django.utils.translation import ngettext
 
 # Register your models here.
 
@@ -9,20 +11,35 @@ admin.site.site_header = "sis001资源后台"
 
 
 class ChapterAdmin(admin.ModelAdmin):
-    list_display = ['name', 'authur', 'introduction', 'collection', 'category', 'classification', 'plate', 'index', 'user', 'crawling_status']
+    list_display = ['name', 'authur', 'introduction', 'collection', 'category', 'classification', 'plate', 'index',
+                    'user', 'crawling_status', 'date_joined']
 
     search_fields = ['name', 'collection__name', 'authur', 'introduction', 'content', 'url']
+    list_filter = ['crawling_status', 'classification', 'plate']
 
     date_hierarchy = 'date_joined'
 
     list_select_related = True  # 减少数据库查询开销
     list_per_page = 25  # 列表显示数据条数
 
+    actions = ['updata_crawling_status']
+
+    def updata_crawling_status(self, request, queryset):
+        updated = queryset.update(crawling_status=False)
+        self.message_user(request, ngettext(
+            '%d 个数据已更新为“未爬取”',
+            '%d 个数据已发布',
+            updated,
+        ) % updated, messages.SUCCESS)
+
+    updata_crawling_status.short_description = "更新下载状态为”未下载“"
+
 
 class CollectionAdmin(admin.ModelAdmin):
     list_display = ['name', 'authur', 'category', 'classification', 'plate', 'introduction', 'is_look_count']
 
     search_fields = ['name', 'authur', 'introduction']
+    list_filter = ['classification', 'plate']
 
     date_hierarchy = 'date_joined'
 

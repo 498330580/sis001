@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.join(BASE_DIR, 'extra_apps'))
 SECRET_KEY = 'django-insecure-m+1owjkbserozp%x!dqt=lfk)p9wsedy&jb-1(+xg4$^*^bsb2'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -138,6 +138,7 @@ APPEND_SLASH = False    # url末尾斜杠
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880   # 设置django的上传数据为5M
 
 # DRF设置
 REST_FRAMEWORK = {

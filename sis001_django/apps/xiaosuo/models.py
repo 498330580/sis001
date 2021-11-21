@@ -102,7 +102,7 @@ class Chapter(models.Model):
     class Meta:
         verbose_name = '章节'
         verbose_name_plural = verbose_name
-        ordering = ['collection', "index", '-date_joined']
+        ordering = ['crawling_status', 'collection', "index", '-date_joined']
 
     def __str__(self):
         return self.name
