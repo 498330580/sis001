@@ -232,6 +232,7 @@ class Get_Xiaosuo:
         for chapter in zhangjie:
             index += 1
             print(f"正在爬取第{index}条：", chapter)
+            time_sleep(5)
             data = self.sis001.get_url(chapter.url)
             t = ""
             if data["status"]:
@@ -348,6 +349,9 @@ def main():
             get_authur()
         else:
             print("请打开代理")
+        count = Chapter.objects.filter(crawling_status=False).order_by("-date_joined").count()
+        if count == 0:
+            break
         sec = 1
         print(f"等待{sec}分钟")
         time.sleep(sec * 60)
